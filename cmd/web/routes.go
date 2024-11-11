@@ -8,7 +8,7 @@ import (
 
 func (app *application) routes(r *chi.Mux) {
 	fs := http.FileServer(http.Dir("./ui/static"))
-	r.Handle("/static/", http.StripPrefix("/static", fs))
+	r.Handle("/static/*", http.StripPrefix("/static", fs))
 	r.Route("/", func(r chi.Router) {
 		r.Get("/login", app.loginPage)
 	})

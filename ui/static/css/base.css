@@ -1,0 +1,145 @@
+/* Define CSS variables for light and dark mode */
+:root {
+  --background-color: #f9f9f9;
+  --text-color: #333;
+  --link-color: #333;
+  --link-hover-color: #000;
+  --border-color: #aaa;
+  --heading-color: #222;
+  --input-background: #fff;
+  --input-border: #ccc;
+  --button-background: #333;
+  --button-text-color: #fff;
+  --button-hover-background: #555;
+}
+
+[data-theme="dark"] {
+  --background-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --link-color: #ccc;
+  --link-hover-color: #fff;
+  --border-color: #555;
+  --heading-color: #fff;
+  --input-background: #2e2e2e;
+  --input-border: #444;
+  --button-background: #444;
+  --button-hover-background: #555;
+}
+
+/* Basic Reset */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  padding: 2rem;
+  max-width: 700px;
+  margin: auto;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-color);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+a:hover {
+  color: var(--link-hover-color);
+  border-color: var(--link-hover-color);
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  color: var(--heading-color);
+  margin-top: 1rem;
+}
+
+p {
+  margin: 1rem 0;
+}
+
+/* Form Styling */
+form {
+  margin-top: 2rem;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+input[type="text"],
+input[type="password"],
+button {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--input-border);
+  background: var(--input-background);
+  color: var(--text-color);
+}
+
+button {
+  background-color: var(--button-background);
+  color: var(--button-text-color);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--button-hover-background);
+}
+
+/* Make sure the header has a relative position */
+header {
+  position: relative;
+}
+
+/* Position the theme toggle button at the top-right */
+#theme-toggle-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+/* Icon color changes based on theme */
+#theme-toggle-button i {
+  color: var(--icon-color); /* Use custom CSS variable for icon color */
+}
+
+/* Hover effect for button */
+#theme-toggle-button:hover {
+  background-color: var(--hover-bg-color);
+}
+
+/* Dark mode theme */
+[data-theme="dark"] {
+  --icon-color: #e0e0e0; /* Light color for dark theme */
+  --hover-bg-color: rgba(255, 255, 255, 0.1); /* Light hover color in dark mode */
+}
+
+/* Light mode theme */
+[data-theme="light"] {
+  --icon-color: #333; /* Dark color for light theme */
+  --hover-bg-color: rgba(0, 0, 0, 0.1); /* Dark hover color in light mode */
+}
