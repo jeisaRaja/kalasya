@@ -1,0 +1,29 @@
+{{define "base"}}
+<!doctype html>
+<html lang="en" style="min-height: 100vh" class="has-background-light">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{template "title" .}} kalasya</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+  </head>
+
+  <body style="height: 100%; display: flex; flex-direction: column">
+    <header></header>
+    <nav class="navbar p-5" role="navigation">
+      <h1><a class="navbar-item is-size-4" href="/">Snippetbox</a></h1>
+      <div class="navbar-end">
+        <a href="/" class="navbar-item">Home</a>
+        <a href="/user/login" class="navbar-item">Login</a>
+        <a href="/user/signup" class="navbar-item">Sign Up</a>
+      </div>
+    </nav>
+    <a href="/snippet/create" class="button mt-5 mx-5 is-dark"
+      >Create snippet</a
+    >
+    <h1>{{.}}</h1>
+  </body>
+</html>
+{{end}}

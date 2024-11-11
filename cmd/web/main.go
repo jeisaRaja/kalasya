@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -17,9 +18,10 @@ type config struct {
 }
 
 type application struct {
-	infoLog  *log.Logger
-	errorLog *log.Logger
-	cfg      config
+	infoLog       *log.Logger
+	errorLog      *log.Logger
+	cfg           config
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -29,14 +31,23 @@ func main() {
 
 	infologger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 	errorlogger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+
+	templateCache, err := newTemplateCache("./ui/html")
+	if err != nil {
+		errorlogger.Fatalf("failed to create new template cache: %v", err)
+	}
+
 	app := application{
-		cfg:      cfg,
-		infoLog:  infologger,
-		errorLog: errorlogger,
+		cfg:           cfg,
+		infoLog:       infologger,
+		errorLog:      errorlogger,
+		templateCache: templateCache,
 	}
 
 	r := chi.NewRouter()
 	app.routes(r)
+
+	fmt.Printf("%+v\n", app.templateCache)
 
 	srv := http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
@@ -46,10 +57,10 @@ func main() {
 		WriteTimeout: 8 * time.Second,
 	}
 
-	err := srv.ListenAndServe()
+	infologger.Printf("running on port :%d\n", cfg.port)
+	err = srv.ListenAndServe()
 	if err != nil {
 		app.errorLog.Println(err)
 	}
 
 }
-
