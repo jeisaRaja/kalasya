@@ -1,6 +1,12 @@
 {{template "base" .}} {{define "title"}}Login{{end}} {{define "body"}}
 <main>
   <form action="/login" method="post">
+    <label for="blog-title">Blog Title:</label>
+    <input type="text" id="blog-title" name="blog-title" required />
+
+    <label for="subdomain">Subdomain:</label>
+    <input type="text" id="subdomain" name="subdomain" required />
+
     <label for="email">Email:</label>
     <input type="email" id="email" name="email" required />
 

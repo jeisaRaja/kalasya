@@ -12,5 +12,6 @@ func (app *application) routes(r *chi.Mux) {
 	r.Route("/", func(r chi.Router) {
     r.Get("/", app.homePage)
 		r.Get("/login", app.loginPage)
+		r.Get("/register", app.registerPage)
 	})
 }
