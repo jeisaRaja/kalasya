@@ -36,6 +36,9 @@
 }
 
 body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   font-family: "Helvetica Neue", Arial, sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
@@ -142,4 +145,28 @@ header {
 [data-theme="light"] {
   --icon-color: #333; /* Dark color for light theme */
   --hover-bg-color: rgba(0, 0, 0, 0.1); /* Dark hover color in light mode */
+}
+
+main {
+  flex-grow: 1;
+}
+
+footer {
+  width: 100%;
+  background-color: var(--background-color); /* Example background color */
+  padding: 10px;
+  text-align: center;
+}
+
+nav {
+  display: flex;
+  gap: 12px;
+}
+
+ul {
+  padding-left: 0.5rem;
+}
+
+li {
+  margin-left: 0.5rem;
 }
