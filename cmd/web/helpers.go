@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"time"
 )
 
-func (app *application) render(w http.ResponseWriter, r *http.Request, name string) {
+func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
 	buffer := new(bytes.Buffer)
 	ts, ok := app.templateCache[name]
 	if !ok {
@@ -18,10 +19,18 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 		app.errorResponse(w, r, http.StatusInternalServerError, fmt.Errorf("Template %s doesn't exist!", name))
 		return
 	}
-	err := ts.Execute(buffer, nil)
+	err := ts.Execute(buffer, app.addDefaultData(td, r))
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
 	buffer.WriteTo(w)
+}
+
+func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+	if td == nil {
+		td = &templateData{}
+	}
+	td.CurrentYear = time.Now().Year()
+	return td
 }

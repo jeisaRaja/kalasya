@@ -1,19 +1,47 @@
-{{template "base" .}} {{define "title"}}Login{{end}} {{define "body"}}
+{{template "base" .}} {{define "title"}}Register{{end}} {{define "body"}}
 <main>
   <form action="/register" method="POST">
-    <label for="blog-title">Blog Title:</label>
-    <input type="text" id="blog-title" name="blog-title" required />
+    {{with .Form}}
+    <label for="blogtitle">Blog Title:</label>
+    {{with .Errors.Get "blogtitle"}}
+    <label class="error">{{.}}</label>
+    {{end}}
+    <input
+      type="text"
+      id="blogtitle"
+      name="blogtitle"
+      value='{{.Get "blogtitle"}}'
+      required
+    />
 
     <label for="subdomain">Subdomain:</label>
-    <input type="text" id="subdomain" name="subdomain" required />
+    {{with .Errors.Get "subdomain"}}
+    <label class="error">{{.}}</label>
+    {{end}}
+    <input
+      type="text"
+      id="subdomain"
+      name="subdomain"
+      value='{{.Get "subdomain"}}'
+      required
+    />
 
     <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required />
-
+    <input
+      type="email"
+      id="email"
+      name="email"
+      value='{{.Get "email"}}'
+      required
+    />
     <label for="password">Password:</label>
+    {{with .Errors.Get "password"}}
+    <label class="error">{{.}}</label>
+    {{end}}
     <input type="password" id="password" name="password" required />
 
     <button type="submit">Login</button>
+    {{end}}
   </form>
 </main>
 {{end}}
