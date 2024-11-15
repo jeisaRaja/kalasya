@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/jeisaraja/kalasya/pkg/forms"
+	"github.com/jeisaraja/kalasya/pkg/models"
 )
 
 func (app *application) loginPage(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +44,53 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var user models.User
+	var blog models.Blog
+	err = form.GetInstance(&user)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	err = form.GetInstance(&blog)
+	if err != nil {
+		app.errorLog.Println(err)
+	}
+
+	blogExists, err := app.models.Blogs.Exists(blog.Subdomain)
+	if err != nil {
+		app.errorLog.Println(err)
+		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	if blogExists {
+		form.Errors.Add("subdomain", "blog with this subdomain exists already")
+		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	emailExists, err := app.models.Users.Exists(user.Email)
+	if err != nil {
+		app.errorLog.Println(err)
+		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	if emailExists {
+    app.infoLog.Println("email duplicate")
+		form.Errors.Add("email", "user with this email exists already")
+		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	err = app.models.Users.Insert(&user)
+	if err != nil {
+		app.errorLog.Println(err)
+		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Creating a new user..."))
+	w.Write([]byte(fmt.Sprintf("Creating a new user...\nUser: %+v", user)))
 }

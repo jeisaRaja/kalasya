@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"html/template"
@@ -10,11 +12,16 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jeisaraja/kalasya/pkg/models"
+	_ "github.com/lib/pq"
 )
 
 type config struct {
 	port int
 	env  string
+	db   struct {
+		dsn string
+	}
 }
 
 type application struct {
@@ -22,11 +29,20 @@ type application struct {
 	errorLog      *log.Logger
 	cfg           config
 	templateCache map[string]*template.Template
+	models        models.Models
 }
 
 func main() {
 	var cfg config
+
+	defaultDSN := "postgres://name:password@localhost:5433/kalasya?sslmode=disable"
+
+	if dsnEnv := os.Getenv("DSN"); dsnEnv != "" {
+		defaultDSN = dsnEnv
+	}
+
 	flag.IntVar(&cfg.port, "port", 8000, "Server port")
+	flag.StringVar(&cfg.db.dsn, "dsn", defaultDSN, "Data source name")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
 	infologger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
@@ -37,17 +53,23 @@ func main() {
 		errorlogger.Fatalf("failed to create new template cache: %v", err)
 	}
 
+	db, err := openDB(cfg)
+	if err != nil {
+		errorlogger.Fatal(err)
+	}
+
+	infologger.Printf("connected to database at %s", cfg.db.dsn)
+
 	app := application{
 		cfg:           cfg,
 		infoLog:       infologger,
 		errorLog:      errorlogger,
 		templateCache: templateCache,
+		models:        models.New(db),
 	}
 
 	r := chi.NewRouter()
 	app.routes(r)
-
-	fmt.Printf("%+v\n", app.templateCache)
 
 	srv := http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
@@ -63,4 +85,20 @@ func main() {
 		app.errorLog.Println(err)
 	}
 
+}
+
+func openDB(cfg config) (*sql.DB, error) {
+	db, err := sql.Open("postgres", cfg.db.dsn)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.PingContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

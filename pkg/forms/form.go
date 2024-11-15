@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/mail"
 	"net/url"
+	"reflect"
 	"strings"
 	"unicode/utf8"
 )
@@ -71,4 +72,25 @@ func (f *Form) EmailValid(field string) {
 
 func (f *Form) Valid() bool {
 	return len(f.Errors) == 0
+}
+
+func (f *Form) GetInstance(dst interface{}) error {
+	v := reflect.ValueOf(dst)
+	if v.Kind() != reflect.Ptr || v.IsNil() {
+		return fmt.Errorf("dst must be a non-nil pointer")
+	}
+
+	v = v.Elem()
+	if v.Kind() != reflect.Struct {
+		return fmt.Errorf("dst must be a pointer to a struct")
+	}
+
+	for fieldName, value := range f.Values {
+		field := v.FieldByNameFunc(func(s string) bool { return strings.EqualFold(s, fieldName) })
+		if field.IsValid() && field.CanSet() {
+			field.SetString(value[0])
+		}
+	}
+
+	return nil
 }

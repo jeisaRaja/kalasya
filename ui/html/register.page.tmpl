@@ -27,6 +27,9 @@
     />
 
     <label for="email">Email:</label>
+    {{with .Errors.Get "email"}}
+    <label class="error">{{.}}</label>
+    {{end}}
     <input
       type="email"
       id="email"
@@ -40,7 +43,7 @@
     {{end}}
     <input type="password" id="password" name="password" required />
 
-    <button type="submit">Login</button>
+    <button type="submit">Register</button>
     {{end}}
   </form>
 </main>
