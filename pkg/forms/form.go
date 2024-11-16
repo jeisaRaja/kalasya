@@ -2,7 +2,6 @@ package forms
 
 import (
 	"fmt"
-	"net/mail"
 	"net/url"
 	"reflect"
 	"strings"
@@ -63,10 +62,10 @@ func (f *Form) PermittedValues(field string, opts ...string) {
 	f.Errors.Add(field, "This field is invalid")
 }
 
-func (f *Form) EmailValid(field string) {
-	_, err := mail.ParseAddress(f.Get("email"))
-	if err != nil {
-		f.Errors.Add(field, "Email address is not valid")
+func (f *Form) CheckFunc(key string, fb func(val string) bool, msg string) {
+	ok := fb(f.Get(key))
+	if !ok {
+		f.Errors.Add(key, msg)
 	}
 }
 

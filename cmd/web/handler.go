@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -30,14 +31,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := forms.New(r.PostForm)
-	form.Required("blogtitle", "subdomain", "email", "password")
-	form.MaxLength("blogtitle", 100)
-	form.MaxLength("subdomain", 50)
-	form.MinLength("blogtitle", 10)
-	form.MinLength("subdomain", 3)
-	form.MinLength("password", 8)
-	form.MaxLength("password", 30)
-	form.EmailValid("email")
+	models.ValidateUser(form)
 
 	if !form.Valid() {
 		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
@@ -45,40 +39,20 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	var blog models.Blog
 	err = form.GetInstance(&user)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
-	err = form.GetInstance(&blog)
+
+	err = app.models.Users.Exists(&user)
 	if err != nil {
-		app.errorLog.Println(err)
-	}
-
-	blogExists, err := app.models.Blogs.Exists(blog.Subdomain)
-	if err != nil {
-		app.errorLog.Println(err)
-		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
-		return
-	}
-
-	if blogExists {
-		form.Errors.Add("subdomain", "blog with this subdomain exists already")
-		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
-		return
-	}
-
-	emailExists, err := app.models.Users.Exists(user.Email)
-	if err != nil {
-		app.errorLog.Println(err)
-		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
-		return
-	}
-
-	if emailExists {
-    app.infoLog.Println("email duplicate")
-		form.Errors.Add("email", "user with this email exists already")
+		switch {
+		case errors.Is(err, models.ErrEmailDuplicate):
+			form.Errors.Add("email", "email taken")
+		case errors.Is(err, models.ErrSubdomainDuplicate):
+			form.Errors.Add("subdomain", "subdomain taken")
+		}
 		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
 		return
 	}
