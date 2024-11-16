@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jeisaraja/kalasya/pkg/forms"
 	"github.com/jeisaraja/kalasya/pkg/models"
 )
@@ -20,6 +21,7 @@ func (app *application) registerPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) homePage(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("home page")
 	app.render(w, r, "home.page.tmpl", nil)
 }
 
@@ -67,4 +69,11 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf("Creating a new user...\nUser: %+v", user)))
+}
+
+func (app *application) subdomainHandler(w http.ResponseWriter, r *http.Request) {
+  fmt.Println("here inside subdomain")
+	subdomain := chi.URLParam(r, "subdomain")
+
+	w.Write([]byte(subdomain))
 }
