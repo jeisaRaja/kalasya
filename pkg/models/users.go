@@ -104,7 +104,7 @@ func ValidateUser(form *forms.Form) {
 	form.Required("blogname", "subdomain", "email", "password")
 	form.MaxLength("blogname", 100)
 	form.MaxLength("subdomain", 50)
-	form.MinLength("blogname", 10)
+	form.MinLength("blogname", 5)
 	form.MinLength("subdomain", 3)
 	form.MinLength("password", 8)
 	form.MaxLength("password", 30)

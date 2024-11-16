@@ -72,8 +72,14 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) subdomainHandler(w http.ResponseWriter, r *http.Request) {
-  fmt.Println("here inside subdomain")
 	subdomain := chi.URLParam(r, "subdomain")
+	blog, err := app.models.Blogs.Get(subdomain)
+	if err != nil {
+    app.errorLog.Println(err)
+		app.notFoundResponse(w, r)
+		return
+	}
 
-	w.Write([]byte(subdomain))
+  fmt.Println("blog is: ", blog)
+	fmt.Fprintf(w, "%#v", blog)
 }

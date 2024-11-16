@@ -17,10 +17,14 @@ type Models struct {
 		Get(id int64) (*User, error)
 		Exists(user *User) error
 	}
+	Blogs interface {
+		Get(subdomain string) (*Blog, error)
+	}
 }
 
 func New(db *sql.DB) Models {
 	return Models{
 		Users: UserModel{DB: db},
+		Blogs: BlogModel{DB: db},
 	}
 }

@@ -2,7 +2,7 @@
 <main>
   <form action="/register" method="POST">
     {{with .Form}}
-    <label for="blogname">Blog Title:</label>
+    <label for="blogname">Blog Name:</label>
     {{with .Errors.Get "blogname"}}
     <label class="error">{{.}}</label>
     {{end}}
