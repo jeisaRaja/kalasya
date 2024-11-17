@@ -65,9 +65,9 @@ func main() {
 	sessionStore := sessions.NewCookieStore([]byte(os.Getenv("AUTH_KEY")), []byte(os.Getenv("ENCRYPT_KEY")))
 	sessionStore.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   int(time.Hour) * 24,
+		MaxAge:   3600 * 24 * 7,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 	}
 
 	app := application{

@@ -19,7 +19,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 		app.errorResponse(w, r, http.StatusInternalServerError, fmt.Errorf("Template %s doesn't exist!", name))
 		return
 	}
-	err := ts.Execute(buffer, app.addDefaultData(td, r))
+	err := ts.Execute(buffer, app.addDefaultData(td, r, w))
 	if err != nil {
 		app.errorLog.Println(err)
 		return
@@ -27,10 +27,37 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	buffer.WriteTo(w)
 }
 
-func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+func (app *application) addDefaultData(td *templateData, r *http.Request, w http.ResponseWriter) *templateData {
 	if td == nil {
 		td = &templateData{}
 	}
+	td.AuthenticatedUser = app.authenticatedUser(r)
 	td.CurrentYear = time.Now().Year()
+
+	session, err := app.session.Get(r, "user-session")
+	if err != nil {
+		td.Flash = ""
+	} else {
+		flashes := session.Flashes()
+		if len(flashes) > 0 {
+			td.Flash, _ = flashes[0].(string)
+		}
+		session.Save(r, w)
+	}
 	return td
+}
+
+func (app *application) authenticatedUser(r *http.Request) int {
+	session, err := app.session.Get(r, "user-session")
+	if err != nil {
+		app.errorLog.Println("Error retrieving session:", err)
+		return 0
+	}
+
+	userID, ok := session.Values["user_id"].(int)
+	if !ok {
+		return 0
+	}
+
+	return userID
 }

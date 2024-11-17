@@ -11,29 +11,16 @@ import (
 )
 
 func (app *application) loginPage(w http.ResponseWriter, r *http.Request) {
-	session, err := app.session.Get(r, "user-session")
-	if err != nil {
-		app.errorLog.Println("failed to get user-session", err)
-		app.serverErrorResponse(w, r, err)
-		return
-	}
+	session, _ := app.session.Get(r, "user-session")
 
-	flash, ok := session.Values["flash"].(string)
-	if !ok {
-		flash = ""
-	}
-	app.infoLog.Println(flash)
-
-	delete(session.Values, "flash")
-	err = session.Save(r, w)
+  err := session.Save(r, w)
 	if err != nil {
 		app.errorLog.Println("failed to save user-session", err)
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	app.infoLog.Println("before rendering login.page.tmpl")
-	app.render(w, r, "login.page.tmpl", &templateData{Form: forms.New(nil), Flash: flash})
+	app.render(w, r, "login.page.tmpl", &templateData{Form: forms.New(nil)})
 }
 
 func (app *application) registerPage(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +30,6 @@ func (app *application) registerPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("home page")
 	app.render(w, r, "home.page.tmpl", nil)
 }
 
@@ -94,7 +80,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.Values["flash"] = "Registration successfull, please login to access your account."
+	session.AddFlash("Registration successfull, please login to access your account.")
 	err = session.Save(r, w)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -102,18 +88,6 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
-}
-
-func (app *application) subdomainHandler(w http.ResponseWriter, r *http.Request) {
-	subdomain := chi.URLParam(r, "subdomain")
-	blog, err := app.models.Blogs.Get(subdomain)
-	if err != nil {
-		app.errorLog.Println(err)
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	fmt.Fprintf(w, "%#v", blog)
 }
 
 func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +110,46 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userSession.Values["user_id"] = id
+	err = userSession.Save(r, w)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 
-	app.infoLog.Println("redirect to home")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) subdomainHandler(w http.ResponseWriter, r *http.Request) {
+	subdomain := chi.URLParam(r, "subdomain")
+	blog, err := app.models.Blogs.Get(subdomain)
+	if err != nil {
+		app.errorLog.Println(err)
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	fmt.Fprintf(w, "%#v", blog)
+}
+
+func (app *application) dashboardPage(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "dashboard.page.tmpl", nil)
+}
+
+func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
+	session, err := app.session.Get(r, "user-session")
+	if err != nil {
+		app.errorLog.Println("cannot get user-session:", err)
+		app.serverErrorResponse(w, r, err)
+	}
+
+	delete(session.Values, "user_id")
+	session.AddFlash("You've been logged out successfully.")
+	err = session.Save(r, w)
+	if err != nil {
+		app.errorLog.Println("cannot save session:", err)
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

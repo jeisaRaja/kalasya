@@ -184,3 +184,28 @@ li {
   margin-top: 30px;
   color: var(--text-color);
 }
+
+.logout > button {
+  background: none;
+  color: var(--link-color);
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+  margin: 0;
+}
+
+/* Hover effect for the logout button */
+.logout > button:hover {
+  color: var(--link-hover-color);
+  border-color: var(--link-hover-color);
+}
+
+.logout {
+  display: inline;
+  margin: 0; /* Remove any unwanted margin */
+  padding: 0;
+}

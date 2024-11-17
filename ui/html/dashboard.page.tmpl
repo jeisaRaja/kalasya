@@ -1,0 +1,27 @@
+{{template "base" .}} {{define "title"}}Dashboard{{end}} {{define "body"}}
+<main>
+  <div class="dashboard">
+    <h2>Welcome to Your Dashboard</h2>
+    <p>Manage your blog posts and settings.</p>
+
+    <!-- Button to Create New Post -->
+    <a href="/new-post" class="button">Create New Post</a>
+
+    <!-- List of Posts -->
+    <ul class="post-list">
+      <li>
+        <a href="/post/1" class="post-title">My First Blog Post</a>
+        <div class="post-meta">Published on November 17, 2024 | 5 Comments</div>
+      </li>
+      <li>
+        <a href="/post/2" class="post-title">A Day in the Life</a>
+        <div class="post-meta">Published on November 10, 2024 | 3 Comments</div>
+      </li>
+      <li>
+        <a href="/post/3" class="post-title">Learning to Code</a>
+        <div class="post-meta">Published on November 5, 2024 | 8 Comments</div>
+      </li>
+    </ul>
+  </div>
+</main>
+{{end}}

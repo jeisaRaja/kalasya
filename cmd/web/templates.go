@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"path/filepath"
 	"time"
@@ -18,9 +17,10 @@ var functions = template.FuncMap{
 }
 
 type templateData struct {
-	CurrentYear int
-	Form        *forms.Form
-	Flash       string
+	AuthenticatedUser int
+	CurrentYear       int
+	Form              *forms.Form
+	Flash             string
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
@@ -32,7 +32,6 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 
 	for _, page := range pages {
 		name := filepath.Base(page)
-		fmt.Println("name ", name)
 		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return nil, err
