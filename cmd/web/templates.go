@@ -19,7 +19,8 @@ var functions = template.FuncMap{
 
 type templateData struct {
 	CurrentYear int
-	Form *forms.Form
+	Form        *forms.Form
+	Flash       string
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

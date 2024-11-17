@@ -21,7 +21,12 @@
       <a href="/login">Login</a>
       <a href="/register">Register</a>
     </nav>
-    {{template "body" .}} {{template "footer" .}}
+      {{with .Flash}}
+        <div class="flash ">
+          {{.}}
+        </div>
+      {{end}}
+      {{template "body" .}} {{template "footer" .}}
     <script>
       const toggleButton = document.getElementById("theme-toggle-button");
 

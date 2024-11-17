@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/sessions"
 	"github.com/jeisaraja/kalasya/pkg/models"
 	_ "github.com/lib/pq"
 )
@@ -30,6 +31,7 @@ type application struct {
 	cfg           config
 	templateCache map[string]*template.Template
 	models        models.Models
+	session       *sessions.CookieStore
 }
 
 func main() {
@@ -60,12 +62,21 @@ func main() {
 
 	infologger.Printf("connected to database at %s", cfg.db.dsn)
 
+	sessionStore := sessions.NewCookieStore([]byte(os.Getenv("AUTH_KEY")), []byte(os.Getenv("ENCRYPT_KEY")))
+	sessionStore.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   int(time.Hour) * 24,
+		HttpOnly: true,
+		Secure:   true,
+	}
+
 	app := application{
 		cfg:           cfg,
 		infoLog:       infologger,
 		errorLog:      errorlogger,
 		templateCache: templateCache,
 		models:        models.New(db),
+		session:       sessionStore,
 	}
 
 	r := chi.NewRouter()
@@ -84,7 +95,6 @@ func main() {
 	if err != nil {
 		app.errorLog.Println(err)
 	}
-
 }
 
 func openDB(cfg config) (*sql.DB, error) {

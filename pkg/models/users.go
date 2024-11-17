@@ -100,7 +100,27 @@ func (m UserModel) Exists(user *User) error {
 	return nil
 }
 
-func ValidateUser(form *forms.Form) {
+func (m UserModel) Authenticate(email, password string) (int, error) {
+	var id int
+	var passwordHash []byte
+	row := m.DB.QueryRow("SELECT id, password_hash FROM users WHERE email = $1", email)
+	err := row.Scan(&id, &passwordHash)
+	if err == sql.ErrNoRows {
+		return 0, ErrInvalidCredentials
+	} else if err != nil {
+		return 0, err
+	}
+	err = bcrypt.CompareHashAndPassword(passwordHash, []byte(password))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		return 0, ErrInvalidCredentials
+	} else if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func ValidateUserRegistration(form *forms.Form) {
 	form.Required("blogname", "subdomain", "email", "password")
 	form.MaxLength("blogname", 100)
 	form.MaxLength("subdomain", 50)

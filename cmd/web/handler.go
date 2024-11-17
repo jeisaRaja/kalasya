@@ -11,7 +11,29 @@ import (
 )
 
 func (app *application) loginPage(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "login.page.tmpl", nil)
+	session, err := app.session.Get(r, "user-session")
+	if err != nil {
+		app.errorLog.Println("failed to get user-session", err)
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	flash, ok := session.Values["flash"].(string)
+	if !ok {
+		flash = ""
+	}
+	app.infoLog.Println(flash)
+
+	delete(session.Values, "flash")
+	err = session.Save(r, w)
+	if err != nil {
+		app.errorLog.Println("failed to save user-session", err)
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.infoLog.Println("before rendering login.page.tmpl")
+	app.render(w, r, "login.page.tmpl", &templateData{Form: forms.New(nil), Flash: flash})
 }
 
 func (app *application) registerPage(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +55,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := forms.New(r.PostForm)
-	models.ValidateUser(form)
+	models.ValidateUserRegistration(form)
 
 	if !form.Valid() {
 		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
@@ -66,20 +88,55 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Creating a new user...\nUser: %+v", user)))
+	session, err := app.session.Get(r, "user-session")
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	session.Values["flash"] = "Registration successfull, please login to access your account."
+	err = session.Save(r, w)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func (app *application) subdomainHandler(w http.ResponseWriter, r *http.Request) {
 	subdomain := chi.URLParam(r, "subdomain")
 	blog, err := app.models.Blogs.Get(subdomain)
 	if err != nil {
-    app.errorLog.Println(err)
+		app.errorLog.Println(err)
 		app.notFoundResponse(w, r)
 		return
 	}
 
-  fmt.Println("blog is: ", blog)
 	fmt.Fprintf(w, "%#v", blog)
+}
+
+func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	form := forms.New(r.PostForm)
+	id, err := app.models.Users.Authenticate(form.Get("email"), form.Get("password"))
+	if err == models.ErrInvalidCredentials {
+		form.Errors.Add("generic", "Email or Password is incorrect")
+		app.render(w, r, "login.page.tmpl", &templateData{Form: form})
+		return
+	} else if err != nil {
+		app.errorLog.Println("error when user model authenticate:", err)
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	userSession, err := app.session.Get(r, "user-session")
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	userSession.Values["user_id"] = id
+
+	app.infoLog.Println("redirect to home")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

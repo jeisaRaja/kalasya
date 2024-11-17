@@ -14,8 +14,9 @@ func (app *application) routes(r *chi.Mux) {
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", app.homePage)
 		r.Get("/login", app.loginPage)
+		r.Post("/login", app.loginUser)
 		r.Get("/register", app.registerPage)
 		r.Post("/register", app.registerUser)
-    r.Get("/blog/{subdomain}", app.subdomainHandler)
+		r.Get("/blog/{subdomain}", app.subdomainHandler)
 	})
 }

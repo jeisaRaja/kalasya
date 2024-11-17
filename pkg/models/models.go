@@ -9,6 +9,7 @@ var (
 	ErrRecordNotFound     = errors.New("record not found")
 	ErrEmailDuplicate     = errors.New("user with this email exists")
 	ErrSubdomainDuplicate = errors.New("blog with this subdomain exists")
+	ErrInvalidCredentials = errors.New("email or password invalid")
 )
 
 type Models struct {
@@ -16,6 +17,7 @@ type Models struct {
 		Insert(u *User) error
 		Get(id int64) (*User, error)
 		Exists(user *User) error
+		Authenticate(email, password string) (int, error)
 	}
 	Blogs interface {
 		Get(subdomain string) (*Blog, error)
