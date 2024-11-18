@@ -63,11 +63,13 @@ func main() {
 	infologger.Printf("connected to database at %s", cfg.db.dsn)
 
 	sessionStore := sessions.NewCookieStore([]byte(os.Getenv("AUTH_KEY")), []byte(os.Getenv("ENCRYPT_KEY")))
+
 	sessionStore.Options = &sessions.Options{
 		Path:     "/",
 		MaxAge:   3600 * 24 * 7,
 		HttpOnly: true,
 		Secure:   false,
+    SameSite: http.SameSiteLaxMode,
 	}
 
 	app := application{
@@ -80,6 +82,7 @@ func main() {
 	}
 
 	r := chi.NewRouter()
+
 	app.routes(r)
 
 	srv := http.Server{

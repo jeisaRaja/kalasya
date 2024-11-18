@@ -16,6 +16,7 @@ services:
       - DSN=${DSN}
       - AUTH_KEY=${AUTH_KEY}
       - ENCRYPT_KEY=${ENCRYPT_KEY}
+      - CSRF_KEY=${CSRF_KEY}
     volumes:
       - .:/app
 

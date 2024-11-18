@@ -1,6 +1,7 @@
 {{template "base" .}} {{define "title"}}Register{{end}} {{define "body"}}
 <main>
   <form action="/register" method="POST">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     {{with .Form}}
     <label for="blogname">Blog Name:</label>
     {{with .Errors.Get "blogname"}}

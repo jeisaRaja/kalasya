@@ -19,6 +19,7 @@ var functions = template.FuncMap{
 type templateData struct {
 	AuthenticatedUser int
 	CurrentYear       int
+	CSRFToken         string
 	Form              *forms.Form
 	Flash             string
 }

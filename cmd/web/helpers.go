@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/csrf"
 )
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
@@ -33,6 +35,8 @@ func (app *application) addDefaultData(td *templateData, r *http.Request, w http
 	}
 	td.AuthenticatedUser = app.authenticatedUser(r)
 	td.CurrentYear = time.Now().Year()
+
+	td.CSRFToken = csrf.Token(r)
 
 	session, err := app.session.Get(r, "user-session")
 	if err != nil {

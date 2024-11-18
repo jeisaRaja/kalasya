@@ -20,7 +20,7 @@
       {{if .AuthenticatedUser}}
       <a href="/dashboard">Dashboard</a>
       <form method="POST" action="/logout" class="logout">
-        <input type="hidden" />
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <button type="submmit">Logout</button>
       </form>
       {{else}}
