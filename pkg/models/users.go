@@ -76,7 +76,17 @@ func (m UserModel) Insert(u *User) error {
 }
 
 func (m UserModel) Get(id int64) (*User, error) {
-	return nil, nil
+	u := &User{}
+	stmt := `SELECT id, email FROM users WHERE id = $1`
+	err := m.DB.QueryRow(stmt, id).Scan(&u.ID, &u.Email)
+	if err == sql.ErrNoRows {
+		return nil, ErrRecordNotFound
+	} else if err != nil {
+		return nil, err
+	}
+	stmt = `SELECT name, subdomain FROM blogs WHERE user_id = $1`
+	err = m.DB.QueryRow(stmt, id).Scan(&u.BlogName, &u.Subdomain)
+	return u, nil
 }
 
 func (m UserModel) Exists(user *User) error {

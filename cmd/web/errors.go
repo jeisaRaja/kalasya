@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 )
 
-func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message interface{}) {
+func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message error) {
 	w.WriteHeader(status)
-	fmt.Fprintf(w, "error: %s", message)
+	app.render(w, r, "error.page.tmpl", &templateData{Error: Error{StatusCode: status, Message: message.Error()}})
 }
 
 func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
@@ -19,5 +19,5 @@ func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
-	app.errorResponse(w, r, http.StatusNotFound, nil)
+	app.errorResponse(w, r, http.StatusNotFound, errors.New("Not Found"))
 }

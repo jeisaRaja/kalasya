@@ -1,6 +1,7 @@
 /* Define CSS variables for light and dark mode */
 :root {
   --background-color: #f9f9f9;
+  --background-color-text-area: #eeeeee;
   --background-color-flash: #665d5e;
   --text-color: #333;
   --link-color: #333;
@@ -16,6 +17,7 @@
 
 [data-theme="dark"] {
   --background-color: #1a1a1a;
+  --background-color-text-area: #222222;
   --background-color-flash: #665d5e;
   --text-color: #e0e0e0;
   --link-color: #ccc;
@@ -96,7 +98,7 @@ button {
 }
 
 button {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   background-color: var(--button-background);
   color: var(--button-text-color);
   cursor: pointer;
@@ -208,4 +210,30 @@ li {
   display: inline;
   margin: 0; /* Remove any unwanted margin */
   padding: 0;
+}
+
+.blog-dashboard-nav {
+  margin-top: 15px;
+}
+
+textarea {
+    margin-top: 10px;
+    width: 100%; /* Full width of the container */
+    max-width: 100%; /* Prevents overflow beyond the container */
+    height: 250px; /* Increased height for better usability */
+    padding: 10px; /* Adds spacing inside the textarea for better readability */
+    font-family: inherit; /* Matches the surrounding font */
+    font-size: 1rem; /* Matches the base font size */
+    background-color: var(--background-color-text-area, #ffffff); /* Uses the custom background variable, defaults to white */
+    color: var(--text-color); /* Dark text color for readability */
+    border: 1px solid #ccc; /* Clean, light border */
+    border-radius: 4px; /* Adds slight rounding to corners */
+    box-sizing: border-box; /* Includes padding and border in width/height calculations */
+    outline: none; /* Removes default outline on focus */
+    resize: none; /* Disables resizing completely */
+}
+
+textarea:focus {
+    border-color: #0077cc; /* Highlights the border on focus */
+    box-shadow: 0 0 4px rgba(0, 119, 204, 0.5); /* Subtle glow effect on focus */
 }

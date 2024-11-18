@@ -21,7 +21,7 @@
       <a href="/dashboard">Dashboard</a>
       <form method="POST" action="/logout" class="logout">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-        <button type="submmit">Logout</button>
+        <button type="submmit">Logout ({{.AuthenticatedUser.Subdomain}})</button>
       </form>
       {{else}}
       <a href="/login">Login</a>

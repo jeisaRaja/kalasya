@@ -12,23 +12,35 @@ func (app *application) routes(r *chi.Mux) {
 	csrfMiddleware := csrf.Protect(
 		[]byte(os.Getenv("CSRF_KEY")),
 		csrf.HttpOnly(true),
-    csrf.Secure(false),
-    csrf.Path("/"),
-    csrf.FieldName("csrf_token"),
+		csrf.Secure(false),
+		csrf.Path("/"),
+		csrf.FieldName("csrf_token"),
 	)
 
 	r.Use(app.recoverPanic)
 	fs := http.FileServer(http.Dir("./ui/static"))
 	r.Handle("/static/*", http.StripPrefix("/static", fs))
+
 	r.Route("/", func(r chi.Router) {
 		r.Use(csrfMiddleware)
-		r.Get("/", app.homePage)
-		r.Get("/login", app.loginPage)
+		
+		// Check authentication only when necessary, not globally
+		r.With(app.redirectIfAuthenticated).Get("/login", app.loginPage)
+		r.With(app.redirectIfAuthenticated).Get("/register", app.registerPage)
+
+		// Routes for login, logout and register
 		r.Post("/login", app.loginUser)
 		r.Post("/logout", app.logoutUser)
-		r.Get("/register", app.registerPage)
 		r.Post("/register", app.registerUser)
+
+		// Authenticated routes
 		r.With(app.requireAuthenticatedUser).Get("/dashboard", app.dashboardPage)
+
+		// Public routes
+		r.Get("/", app.homePage)
 		r.Get("/blog/{subdomain}", app.subdomainHandler)
 	})
+
+	// This route will handle unmatched paths
+	r.NotFound(app.notFoundResponse)
 }

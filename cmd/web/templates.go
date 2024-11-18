@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jeisaraja/kalasya/pkg/forms"
+	"github.com/jeisaraja/kalasya/pkg/models"
 )
 
 func humanDate(t time.Time) string {
@@ -16,12 +17,18 @@ var functions = template.FuncMap{
 	"humanDate": humanDate,
 }
 
+type Error struct {
+	StatusCode   int
+	Message      string
+}
+
 type templateData struct {
-	AuthenticatedUser int
+	AuthenticatedUser *models.User
 	CurrentYear       int
 	CSRFToken         string
 	Form              *forms.Form
 	Flash             string
+	Error             Error
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

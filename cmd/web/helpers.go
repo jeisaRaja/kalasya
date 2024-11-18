@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/csrf"
+	"github.com/jeisaraja/kalasya/pkg/models"
 )
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
@@ -51,17 +52,11 @@ func (app *application) addDefaultData(td *templateData, r *http.Request, w http
 	return td
 }
 
-func (app *application) authenticatedUser(r *http.Request) int {
-	session, err := app.session.Get(r, "user-session")
-	if err != nil {
-		app.errorLog.Println("Error retrieving session:", err)
-		return 0
-	}
-
-	userID, ok := session.Values["user_id"].(int)
+func (app *application) authenticatedUser(r *http.Request) *models.User {
+	user, ok := r.Context().Value(contextKeyUser).(*models.User)
 	if !ok {
-		return 0
+		return nil
 	}
 
-	return userID
+	return user
 }

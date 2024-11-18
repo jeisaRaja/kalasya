@@ -11,15 +11,6 @@ import (
 )
 
 func (app *application) loginPage(w http.ResponseWriter, r *http.Request) {
-	session, _ := app.session.Get(r, "user-session")
-
-  err := session.Save(r, w)
-	if err != nil {
-		app.errorLog.Println("failed to save user-session", err)
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
 	app.render(w, r, "login.page.tmpl", &templateData{Form: forms.New(nil)})
 }
 

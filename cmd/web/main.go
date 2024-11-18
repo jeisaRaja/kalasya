@@ -25,6 +25,10 @@ type config struct {
 	}
 }
 
+type contextKey string
+
+var contextKeyUser = contextKey("user")
+
 type application struct {
 	infoLog       *log.Logger
 	errorLog      *log.Logger
@@ -69,7 +73,7 @@ func main() {
 		MaxAge:   3600 * 24 * 7,
 		HttpOnly: true,
 		Secure:   false,
-    SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	app := application{
