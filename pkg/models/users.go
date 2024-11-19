@@ -97,8 +97,8 @@ func (m UserModel) Insert(u *User) error {
 
 func (m UserModel) Get(id int64) (*User, error) {
 	u := &User{}
-	stmt := `SELECT id, email FROM users WHERE id = $1`
-	err := m.DB.QueryRow(stmt, id).Scan(&u.ID, &u.Email)
+	stmt := `SELECT id, name, email FROM users WHERE id = $1`
+	err := m.DB.QueryRow(stmt, id).Scan(&u.ID, &u.Name, &u.Email)
 	if err == sql.ErrNoRows {
 		return nil, ErrRecordNotFound
 	} else if err != nil {

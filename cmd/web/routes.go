@@ -40,6 +40,7 @@ func (app *application) routes(r *chi.Mux) {
 		// Public routes
 		r.Get("/", app.homePage)
 		r.Get("/blog/{subdomain}", app.blogHomePage)
+    r.With(app.requireAuthorizedUser).Post("/blog/{subdomain}/home", app.updateBlogHome)
 	})
 
 	// This route will handle unmatched paths

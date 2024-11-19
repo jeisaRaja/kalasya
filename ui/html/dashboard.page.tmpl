@@ -14,11 +14,10 @@
   </header>
 
   <h2>Homepage</h2>
-  <form action="/save-homepage" method="POST">
-    <label for="homepage-content">Edit your homepage content:</label>
-    <textarea id="homepage-content" name="homepageContent" rows="10" cols="50">
-Welcome to my blog!</textarea
-    >
+  <form action="/blog/{{.AuthenticatedUser.Subdomain}}/home" method="POST">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+    <label for="home-content">Edit your homepage content:</label>
+    <textarea id="home-content" name="homeContent" rows="10" cols="50">{{.Form.Get "homeContent"}}</textarea>
     <button type="submit">Publish</button>
     <button type="button" onclick="alert('Preview coming soon!')">View</button>
   </form>

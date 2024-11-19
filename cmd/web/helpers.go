@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/csrf"
 	"github.com/jeisaraja/kalasya/pkg/models"
 )
@@ -59,4 +60,16 @@ func (app *application) authenticatedUser(r *http.Request) *models.User {
 	}
 
 	return user
+}
+
+func (app *application) authorizedUser(r *http.Request) bool {
+	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	if !ok {
+		return false
+	}
+	urlSubdomain := chi.URLParam(r, "subdomain")
+	if user.Subdomain != urlSubdomain {
+		return false
+	}
+	return true
 }

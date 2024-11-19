@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jeisaraja/kalasya/pkg/forms"
@@ -118,7 +120,7 @@ func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if blogPost.Content == "" {
-    blogPost.Content = "No Content Yet"
+		blogPost.Content = "No Content Yet"
 	}
 
 	app.render(w, r, "post.page.tmpl", &templateData{
@@ -128,7 +130,24 @@ func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) dashboardPage(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "dashboard.page.tmpl", nil)
+	form := forms.New(url.Values{})
+	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	if !ok {
+		app.notFoundResponse(w, r)
+		return
+	}
+	_, post, err := app.models.Blogs.Get(user.Subdomain)
+	if err == models.ErrRecordNotFound {
+		app.notFoundResponse(w, r)
+		return
+	} else if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.errorLog.Println("content", post.Content)
+	form.Add("homeContent", post.Content)
+	app.render(w, r, "dashboard.page.tmpl", &templateData{Form: form})
 }
 
 func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
@@ -148,4 +167,30 @@ func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
+	subdomain := chi.URLParam(r, "subdomain")
+
+	blog, post, err := app.models.Blogs.Get(subdomain)
+	if err == models.ErrRecordNotFound {
+		app.notFoundResponse(w, r)
+		return
+	} else if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+	form := forms.New(r.PostForm)
+	value := form.Get("homeContent")
+	post.Content = strings.TrimSpace(value)
+	err = app.models.BlogPost.Update(blog, post)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+	app.render(w, r, "dashboard.page.tmpl", &templateData{Form: form})
 }

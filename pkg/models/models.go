@@ -22,11 +22,15 @@ type Models struct {
 	Blogs interface {
 		Get(subdomain string) (*Blog, *BlogPost, error)
 	}
+	BlogPost interface {
+		Update(blog *Blog, post *BlogPost) error
+	}
 }
 
 func New(db *sql.DB) Models {
 	return Models{
-		Users: UserModel{DB: db},
-		Blogs: BlogModel{DB: db},
+		Users:    UserModel{DB: db},
+		Blogs:    BlogModel{DB: db},
+		BlogPost: BlogPostModel{DB: db},
 	}
 }
