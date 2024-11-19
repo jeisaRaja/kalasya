@@ -20,7 +20,7 @@ type Models struct {
 		Authenticate(email, password string) (int, error)
 	}
 	Blogs interface {
-		Get(subdomain string) (*Blog, error)
+		Get(subdomain string) (*Blog, *BlogPost, error)
 	}
 }
 

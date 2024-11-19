@@ -1,0 +1,8 @@
+{{template "base_blog" .}}
+{{define "title"}}{{.Blog.Name}}{{end}}
+{{define "body"}}
+<article>
+  <h1>{{.BlogPost.Title}}</h1>
+  <p>{{.BlogPost.Content}}</p>
+</article>
+{{end}}

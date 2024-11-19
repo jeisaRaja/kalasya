@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -110,16 +109,22 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func (app *application) subdomainHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 	subdomain := chi.URLParam(r, "subdomain")
-	blog, err := app.models.Blogs.Get(subdomain)
+	blog, blogPost, err := app.models.Blogs.Get(subdomain)
 	if err != nil {
 		app.errorLog.Println(err)
 		app.notFoundResponse(w, r)
 		return
 	}
+	if blogPost.Content == "" {
+    blogPost.Content = "No Content Yet"
+	}
 
-	fmt.Fprintf(w, "%#v", blog)
+	app.render(w, r, "post.page.tmpl", &templateData{
+		Blog:     blog,
+		BlogPost: blogPost,
+	})
 }
 
 func (app *application) dashboardPage(w http.ResponseWriter, r *http.Request) {

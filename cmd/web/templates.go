@@ -18,8 +18,8 @@ var functions = template.FuncMap{
 }
 
 type Error struct {
-	StatusCode   int
-	Message      string
+	StatusCode int
+	Message    string
 }
 
 type templateData struct {
@@ -29,6 +29,9 @@ type templateData struct {
 	Form              *forms.Form
 	Flash             string
 	Error             Error
+	Blog              *models.Blog
+	BlogPost          *models.BlogPost
+	BlogPosts         []*models.BlogPost
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

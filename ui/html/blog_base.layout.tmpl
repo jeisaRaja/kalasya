@@ -1,0 +1,58 @@
+{{define "base_blog"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{template "title" .}}</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/base.css" />
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <h1>{{.Blog.Name}}</h1>
+      <p>Welcome to {{.Blog.Name}} by {{.Blog.AuthorName}}</p>
+      <button id="theme-toggle-button"></button>
+    </header>
+    <main>{{template "body" .}}</main>
+    <footer>
+      <p>© {{.Blog.AuthorName}} - Powered by Kalasya</p>
+    </footer>
+
+    <script>
+      const toggleButton = document.getElementById("theme-toggle-button");
+
+      let currentTheme;
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+        currentTheme = theme;
+        toggleButton.innerHTML =
+          currentTheme === "dark"
+            ? '<i class="fas fa-moon"></i>'
+            : '<i class="fas fa-sun"></i>';
+      }
+
+      const userPreference = localStorage.getItem("theme");
+      const systemPreference = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
+
+      setTheme(userPreference || systemPreference);
+
+      toggleButton.addEventListener("click", () => {
+        if (currentTheme === "dark") {
+          setTheme("light");
+        } else {
+          setTheme("dark");
+        }
+      });
+    </script>
+  </body>
+</html>
+{{end}}

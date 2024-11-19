@@ -12,4 +12,8 @@ require (
 	golang.org/x/crypto v0.29.0
 )
 
-require github.com/gorilla/securecookie v1.1.2 // indirect
+require (
+	github.com/gorilla/securecookie v1.1.2 // indirect
+	github.com/gosimple/slug v1.14.0 // indirect
+	github.com/gosimple/unidecode v1.0.1 // indirect
+)

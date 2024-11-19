@@ -23,6 +23,7 @@ func (app *application) routes(r *chi.Mux) {
 
 	r.Route("/", func(r chi.Router) {
 		r.Use(csrfMiddleware)
+    r.Use(app.authenticate)
 		
 		// Check authentication only when necessary, not globally
 		r.With(app.redirectIfAuthenticated).Get("/login", app.loginPage)
@@ -38,7 +39,7 @@ func (app *application) routes(r *chi.Mux) {
 
 		// Public routes
 		r.Get("/", app.homePage)
-		r.Get("/blog/{subdomain}", app.subdomainHandler)
+		r.Get("/blog/{subdomain}", app.blogHomePage)
 	})
 
 	// This route will handle unmatched paths

@@ -11,6 +11,7 @@ import (
 
 type User struct {
 	ID        int64
+	Name      string
 	Email     string
 	Password  string
 	BlogName  string
@@ -38,13 +39,15 @@ func (m UserModel) Insert(u *User) error {
 	defer func() {
 		if err != nil {
 			tx.Rollback()
+		} else {
+			tx.Commit()
 		}
 	}()
 
 	err = tx.QueryRow(`
-        INSERT INTO users (email, password_hash, created_at, updated_at)
-        VALUES ($1, $2, $3, $4) RETURNING id`,
-		u.Email, passwordHash, time.Now().UTC(), time.Now().UTC()).Scan(&u.ID)
+        INSERT INTO users (email, name, password_hash, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+		u.Email, u.Name, passwordHash, time.Now().UTC(), time.Now().UTC()).Scan(&u.ID)
 
 	if err != nil {
 		return err
@@ -53,21 +56,38 @@ func (m UserModel) Insert(u *User) error {
 	blog := Blog{
 		UserID:    u.ID,
 		Subdomain: u.Subdomain,
-		BlogName:  u.BlogName,
+		Name:      u.BlogName,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	}
 
-	_, err = tx.Exec(`
+	err = tx.QueryRow(`
         INSERT INTO blogs (user_id, name, subdomain, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5)`,
-		blog.UserID, blog.BlogName, blog.Subdomain, blog.CreatedAt, blog.UpdatedAt)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id;`,
+		blog.UserID, blog.Name, blog.Subdomain, blog.CreatedAt, blog.UpdatedAt).Scan(&blog.ID)
 
 	if err != nil {
 		return err
 	}
 
-	err = tx.Commit()
+	var post BlogPost
+	err = tx.QueryRow(`
+	INSERT INTO blog_posts (blog_id, title, content, published, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5, $6)
+	RETURNING id;`,
+		blog.ID, post.Title, post.Content, true, post.CreatedAt, post.UpdatedAt).Scan(&post.ID)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+	UPDATE blogs
+	SET main_post_id = $1
+	WHERE id = $2;`,
+		post.ID, blog.ID)
+
 	if err != nil {
 		return err
 	}

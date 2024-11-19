@@ -38,6 +38,19 @@
       value='{{.Get "email"}}'
       required
     />
+
+    <label for="subdomain">Name:</label>
+    {{with .Errors.Get "name"}}
+    <label class="error">{{.}}</label>
+    {{end}}
+    <input
+      type="text"
+      id="name"
+      name="name"
+      value='{{.Get "name"}}'
+      required
+    />
+
     <label for="password">Password:</label>
     {{with .Errors.Get "password"}}
     <label class="error">{{.}}</label>
