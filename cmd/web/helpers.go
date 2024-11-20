@@ -3,12 +3,15 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/csrf"
 	"github.com/jeisaraja/kalasya/pkg/models"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/yuin/goldmark"
 )
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
@@ -72,4 +75,14 @@ func (app *application) authorizedUser(r *http.Request) bool {
 		return false
 	}
 	return true
+}
+
+func (app *application) toHTML(md string) template.HTML {
+	var unsafe bytes.Buffer
+	if err := goldmark.Convert([]byte(md), &unsafe); err != nil {
+		panic(err)
+	}
+	html := bluemonday.UGCPolicy().SanitizeBytes(unsafe.Bytes())
+
+	return template.HTML(html)
 }

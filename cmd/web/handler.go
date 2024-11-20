@@ -123,6 +123,8 @@ func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 		blogPost.Content = "No Content Yet"
 	}
 
+	blogPost.SanitizedHTML = app.toHTML(blogPost.Content)
+
 	app.render(w, r, "post.page.tmpl", &templateData{
 		Blog:     blog,
 		BlogPost: blogPost,
@@ -145,7 +147,6 @@ func (app *application) dashboardPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.errorLog.Println("content", post.Content)
 	form.Add("homeContent", post.Content)
 	app.render(w, r, "dashboard.page.tmpl", &templateData{Form: form})
 }
@@ -192,5 +193,5 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
-	app.render(w, r, "dashboard.page.tmpl", &templateData{Form: form})
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }

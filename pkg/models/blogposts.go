@@ -3,18 +3,20 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"time"
 )
 
 type BlogPost struct {
-	ID        int64
-	BlogID    int64
-	Slug      string
-	Title     string
-	Content   string
-	Published bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID            int64
+	BlogID        int64
+	Slug          string
+	Title         string
+	Content       string
+	SanitizedHTML template.HTML
+	Published     bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type BlogPostModel struct {

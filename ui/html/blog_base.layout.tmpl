@@ -13,13 +13,12 @@
   </head>
   <body>
     <header>
-      <h1>{{.Blog.Name}}</h1>
-      <p>Welcome to {{.Blog.Name}} by {{.Blog.AuthorName}}</p>
+      <a href="{{.Blog.Subdomain}}">{{.Blog.Name}}</a>
       <button id="theme-toggle-button"></button>
     </header>
     <main>{{template "body" .}}</main>
     <footer>
-      <p>© {{.Blog.AuthorName}} - Powered by Kalasya</p>
+      <p>© {{.Blog.AuthorName}} - Powered by <a href="/">Kalasya</a></p>
     </footer>
 
     <script>

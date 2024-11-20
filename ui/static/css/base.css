@@ -4,6 +4,11 @@
   --background-color-text-area: #eeeeee;
   --background-color-flash: #665d5e;
   --text-color: #333;
+  --header-color: #111;
+  --subheader-color: #222;
+  --muted-text-color: #555;
+  --blockquote-text-color: #666;
+  --border-color: #ddd;   
   --link-color: #333;
   --link-hover-color: #000;
   --border-color: #aaa;
@@ -20,6 +25,11 @@
   --background-color-text-area: #222222;
   --background-color-flash: #665d5e;
   --text-color: #e0e0e0;
+  --header-color: #f5f5f5;
+  --subheader-color: #dcdcdc;
+  --muted-text-color: #b0b0b0;
+  --blockquote-text-color: #cccccc;
+  --border-color: #444;   
   --link-color: #ccc;
   --link-hover-color: #fff;
   --border-color: #555;
@@ -159,6 +169,7 @@ main {
 }
 
 footer {
+  margin-top: 2rem;
   width: 100%;
   background-color: var(--background-color); /* Example background color */
   padding: 10px;
@@ -236,4 +247,64 @@ textarea {
 textarea:focus {
     border-color: #0077cc; /* Highlights the border on focus */
     box-shadow: 0 0 4px rgba(0, 119, 204, 0.5); /* Subtle glow effect on focus */
+}
+
+
+/* General styling for the blog article */
+article {
+    font-family: 'Garamond', 'Book Antiqua', serif;
+    line-height: 1.6;
+    font-size: 16px;
+    color: var(--text-color);
+    margin: 0 auto;
+    max-width: 800px;
+}
+
+/* Title styling */
+article h1 {
+    font-family: 'Helvetica', sans-serif;
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--header-color);
+    margin-bottom: 20px;
+}
+
+/* Content block styling */
+article > div {
+    margin-top: 20px;
+}
+
+/* Paragraph styling */
+article p {
+    margin-bottom: 16px;
+    color: var(--text-color);
+}
+
+/* Headings within the article */
+article h2, article h3 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: var(--subheader-color);
+}
+
+/* List styling */
+article ul, article ol {
+    margin-left: 20px;
+    margin-bottom: 16px;
+    color: var(--text-color);
+}
+
+/* Blockquote styling */
+article blockquote {
+    font-style: italic;
+    color: var(--blockquote-text-color);
+    border-left: 4px solid var(--border-color);
+    padding-left: 12px;
+    margin: 16px 0;
+}
+
+/* Muted text (e.g., metadata or small print) */
+article .muted {
+    color: var(--muted-text-color);
+    font-size: 14px;
 }

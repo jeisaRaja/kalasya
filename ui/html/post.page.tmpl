@@ -3,6 +3,6 @@
 {{define "body"}}
 <article>
   <h1>{{.BlogPost.Title}}</h1>
-  <p>{{.BlogPost.Content}}</p>
+  <div>{{.BlogPost.SanitizedHTML}}</div>
 </article>
 {{end}}
