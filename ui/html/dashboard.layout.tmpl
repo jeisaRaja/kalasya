@@ -18,7 +18,9 @@
     </header>
     <nav>
       {{if .AuthenticatedUser}}
-      <a href="/blog/{{.AuthenticatedUser.Subdomain}}">{{.AuthenticatedUser.BlogName}}</a>
+      <a href="/blog/{{.AuthenticatedUser.Subdomain}}"
+        >{{.AuthenticatedUser.BlogName}}</a
+      >
       <a href="/dashboard">Dashboard</a>
       <form method="POST" action="/logout" class="logout">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
@@ -29,6 +31,18 @@
       <a href="/register">Register</a>
       {{end}}
     </nav>
+    <diV>
+      <nav class="blog-dashboard-nav">
+        <a href="/dashboard">Home</a>
+        <a href="/dashboard/posts">Posts</a>
+        <a href="/dashboard/pages">Pages</a>
+        <a href="/themes">Themes</a>
+        <a href="/emails">Emails</a>
+        <a href="/upgrade">Upgrade</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/settings">Settings</a>
+      </nav>
+    </header>
     {{with .Flash}}
     <div class="flash">{{.}}</div>
     {{end}} {{template "body" .}} {{template "footer" .}}

@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gosimple/slug"
 	"github.com/jeisaraja/kalasya/pkg/forms"
 	"github.com/jeisaraja/kalasya/pkg/models"
 )
@@ -197,6 +199,7 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 	err = r.ParseForm()
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+		return
 	}
 	form := forms.New(r.PostForm)
 	value := form.Get("homeContent")
@@ -210,4 +213,44 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "dashboardPosts.page.tmpl", nil)
+}
+
+func (app *application) dashboardCreatePostPage(w http.ResponseWriter, r *http.Request) {
+	form := forms.New(r.PostForm)
+	app.render(w, r, "dashboardCreatePost.page.tmpl", &templateData{
+		Form: form,
+	})
+}
+
+func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	if !ok {
+		app.notFoundResponse(w, r)
+		return
+	}
+	blog, _, err := app.models.Blogs.Get(user.Subdomain)
+	if err == models.ErrRecordNotFound {
+		app.notFoundResponse(w, r)
+		return
+	} else if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	err = r.ParseForm()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	form := forms.New(r.PostForm)
+	post := models.BlogPost{
+		BlogID:    blog.ID,
+		Slug:      slug.Make(form.Get("title")),
+		Content:   form.Get("content"),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	}
+
+	app.infoLog.Printf("%+v", post)
+
+	app.render(w, r, "dashboardCreatePost.page.tmpl", &templateData{Form: form})
 }

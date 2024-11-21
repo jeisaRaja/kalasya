@@ -46,6 +46,8 @@ func (app *application) routes(r *chi.Mux) {
 
 			r.Get("/", app.dashboardPage)
 			r.Get("/posts", app.dashboardPostsPage)
+      r.Post("/posts", app.createPost)
+      r.Get("/create-post" , app.dashboardCreatePostPage)
 			r.Post("/home", app.updateBlogHome)
 		})
 	})
