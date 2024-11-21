@@ -16,6 +16,9 @@
       <a href="{{.Blog.Subdomain}}">{{.Blog.Name}}</a>
       <button id="theme-toggle-button"></button>
     </header>
+    <nav>
+      {{.Blog.NavHTML}}
+    </nav>
     <main>{{template "body" .}}</main>
     <footer>
       <p>© {{.Blog.AuthorName}} - Powered by <a href="/">Kalasya</a></p>

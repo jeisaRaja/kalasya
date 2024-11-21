@@ -53,19 +53,22 @@ func (m UserModel) Insert(u *User) error {
 		return err
 	}
 
+	nav := "[Home](/) [Blog](/blog/)"
+
 	blog := Blog{
 		UserID:    u.ID,
 		Subdomain: u.Subdomain,
 		Name:      u.BlogName,
+		Nav:       nav,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	}
 
 	err = tx.QueryRow(`
-        INSERT INTO blogs (user_id, name, subdomain, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO blogs (user_id, name, subdomain, nav, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id;`,
-		blog.UserID, blog.Name, blog.Subdomain, blog.CreatedAt, blog.UpdatedAt).Scan(&blog.ID)
+		blog.UserID, blog.Name, blog.Subdomain, blog.Nav, blog.CreatedAt, blog.UpdatedAt).Scan(&blog.ID)
 
 	if err != nil {
 		return err

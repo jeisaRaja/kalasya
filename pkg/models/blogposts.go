@@ -13,7 +13,7 @@ type BlogPost struct {
 	Slug          string
 	Title         string
 	Content       string
-	SanitizedHTML template.HTML
+	ContentHTML template.HTML
 	Published     bool
 	CreatedAt     time.Time
 	UpdatedAt     time.Time

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
 )
 
@@ -22,9 +23,10 @@ func (app *application) routes(r *chi.Mux) {
 	r.Handle("/static/*", http.StripPrefix("/static", fs))
 
 	r.Route("/", func(r chi.Router) {
+		r.Use(middleware.StripSlashes)
 		r.Use(csrfMiddleware)
-    r.Use(app.authenticate)
-		
+		r.Use(app.authenticate)
+
 		// Check authentication only when necessary, not globally
 		r.With(app.redirectIfAuthenticated).Get("/login", app.loginPage)
 		r.With(app.redirectIfAuthenticated).Get("/register", app.registerPage)
@@ -40,7 +42,7 @@ func (app *application) routes(r *chi.Mux) {
 		// Public routes
 		r.Get("/", app.homePage)
 		r.Get("/blog/{subdomain}", app.blogHomePage)
-    r.With(app.requireAuthorizedUser).Post("/blog/{subdomain}/home", app.updateBlogHome)
+		r.With(app.requireAuthorizedUser).Post("/blog/{subdomain}/home", app.updateBlogHome)
 	})
 
 	// This route will handle unmatched paths

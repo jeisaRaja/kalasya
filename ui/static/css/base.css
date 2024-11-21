@@ -119,16 +119,19 @@ button:hover {
   background-color: var(--button-hover-background);
 }
 
-/* Make sure the header has a relative position */
-header {
+header,
+header > h1{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   position: relative;
+  height: 60px; /* Set a fixed height for the header if needed */
+  margin: 0;
 }
 
-/* Position the theme toggle button at the top-right */
+
 #theme-toggle-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  margin-top: 0;
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -177,6 +180,11 @@ footer {
 }
 
 nav {
+  display: flex;
+  gap: 12px;
+}
+
+nav > p{
   display: flex;
   gap: 12px;
 }

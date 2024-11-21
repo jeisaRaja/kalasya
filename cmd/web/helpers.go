@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -77,12 +78,28 @@ func (app *application) authorizedUser(r *http.Request) bool {
 	return true
 }
 
-func (app *application) toHTML(md string) template.HTML {
+func (app *application) toHTML(md string) (template.HTML, error) {
 	var unsafe bytes.Buffer
 	if err := goldmark.Convert([]byte(md), &unsafe); err != nil {
-		panic(err)
+		return "", err
 	}
 	html := bluemonday.UGCPolicy().SanitizeBytes(unsafe.Bytes())
 
-	return template.HTML(html)
+	return template.HTML(html), nil
+}
+
+func (app *application) parseBlogNav(nav, subdomain string) (template.HTML, error) {
+	var unsafe strings.Builder
+
+	if err := goldmark.Convert([]byte(nav), &unsafe); err != nil {
+		return "", err
+	}
+	baseUrl := fmt.Sprintf("/blog/%s", subdomain)
+
+	htmlStr := unsafe.String()
+	htmlStr = strings.ReplaceAll(htmlStr, `href="/`, fmt.Sprintf(`href="%s/`, baseUrl))
+
+	html := bluemonday.UGCPolicy().Sanitize(htmlStr)
+
+	return template.HTML(html), nil
 }
