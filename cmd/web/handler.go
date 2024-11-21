@@ -126,15 +126,15 @@ func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 	blogPost.ContentHTML, err = app.toHTML(blogPost.Content)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
-    return
+		return
 	}
 	blog.NavHTML, err = app.parseBlogNav(blog.Nav, blog.Subdomain)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
-    return
+		return
 	}
 
-	app.render(w, r, "post.page.tmpl", &templateData{
+	app.render(w, r, "blogPost.page.tmpl", &templateData{
 		Blog:     blog,
 		BlogPost: blogPost,
 	})
@@ -157,7 +157,7 @@ func (app *application) dashboardPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form.Add("homeContent", post.Content)
-	app.render(w, r, "dashboard.page.tmpl", &templateData{Form: form})
+	app.render(w, r, "dashboardHome.page.tmpl", &templateData{Form: form})
 }
 
 func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
@@ -180,9 +180,12 @@ func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
-	subdomain := chi.URLParam(r, "subdomain")
-
-	blog, post, err := app.models.Blogs.Get(subdomain)
+	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	if !ok {
+		app.notFoundResponse(w, r)
+		return
+	}
+	blog, post, err := app.models.Blogs.Get(user.Subdomain)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return
@@ -203,4 +206,8 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "dashboardPosts.page.tmpl", nil)
 }

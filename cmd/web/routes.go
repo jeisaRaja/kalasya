@@ -36,13 +36,18 @@ func (app *application) routes(r *chi.Mux) {
 		r.Post("/logout", app.logoutUser)
 		r.Post("/register", app.registerUser)
 
-		// Authenticated routes
-		r.With(app.requireAuthenticatedUser).Get("/dashboard", app.dashboardPage)
-
 		// Public routes
 		r.Get("/", app.homePage)
 		r.Get("/blog/{subdomain}", app.blogHomePage)
-		r.With(app.requireAuthorizedUser).Post("/blog/{subdomain}/home", app.updateBlogHome)
+
+		// Authenticated routes
+		r.Route("/dashboard", func(r chi.Router) {
+			r.Use(app.requireAuthenticatedUser)
+
+			r.Get("/", app.dashboardPage)
+			r.Get("/posts", app.dashboardPostsPage)
+			r.Post("/home", app.updateBlogHome)
+		})
 	})
 
 	// This route will handle unmatched paths

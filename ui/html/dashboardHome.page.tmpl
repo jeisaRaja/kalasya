@@ -1,0 +1,25 @@
+{{template "dashboardBase" .}} {{define "title"}}Dashboard Home{{end}} {{define
+"body"}}
+<header>
+  <nav class="blog-dashboard-nav">
+    <a href="/dashboard">Home</a>
+    <a href="/dashboard/posts">Posts</a>
+    <a href="/dashboard/pages">Pages</a>
+    <a href="/themes">Themes</a>
+    <a href="/emails">Emails</a>
+    <a href="/upgrade">Upgrade</a>
+    <a href="/analytics">Analytics</a>
+    <a href="/settings">Settings</a>
+  </nav>
+</header>
+<h1>Welcome to your Dashboard, {{.AuthenticatedUser.Name}}</h1>
+<form action="/blog/{{.AuthenticatedUser.Subdomain}}/home" method="POST">
+  <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+  <label for="home-content">Edit your homepage content:</label>
+  <textarea id="home-content" name="homeContent" rows="10" cols="50">
+{{.Form.Get "homeContent" | html}}</textarea
+  >
+  <button type="submit">Publish</button>
+  <button type="button" onclick="alert('Preview coming soon!')">View</button>
+</form>
+{{end}}
