@@ -27,8 +27,8 @@ type BlogModel struct {
 func (m BlogModel) Get(subdomain string) (*Blog, *BlogPost, error) {
 	var blog Blog
 	var blogPost BlogPost
-	query := `SELECT name, subdomain, nav, user_id, main_post_id, updated_at FROM blogs WHERE subdomain = $1`
-	err := m.DB.QueryRow(query, subdomain).Scan(&blog.Name, &blog.Subdomain, &blog.Nav, &blog.UserID, &blog.MainPostID, &blog.UpdatedAt)
+	query := `SELECT id, name, subdomain, nav, user_id, main_post_id, updated_at FROM blogs WHERE subdomain = $1`
+	err := m.DB.QueryRow(query, subdomain).Scan(&blog.ID, &blog.Name, &blog.Subdomain, &blog.Nav, &blog.UserID, &blog.MainPostID, &blog.UpdatedAt)
 	if err != nil {
 		return nil, nil, fmt.Errorf("while fetching blog by subdomain: %v", err)
 	}

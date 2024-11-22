@@ -24,6 +24,7 @@ type Models struct {
 	}
 	BlogPost interface {
 		Update(blog *Blog, post *BlogPost) error
+		Insert(post *BlogPost) error
 	}
 }
 

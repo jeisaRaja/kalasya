@@ -229,6 +229,7 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	blog, _, err := app.models.Blogs.Get(user.Subdomain)
+	app.infoLog.Printf("%#v", blog)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return
@@ -242,15 +243,24 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	form := forms.New(r.PostForm)
+
+	publish := r.PostFormValue("publish") == "true"
+
 	post := models.BlogPost{
 		BlogID:    blog.ID,
 		Slug:      slug.Make(form.Get("title")),
+		Title:     form.Get("title"),
 		Content:   form.Get("content"),
+		Published: publish,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	}
 
-	app.infoLog.Printf("%+v", post)
+	err = app.models.BlogPost.Insert(&post)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 
-	app.render(w, r, "dashboardCreatePost.page.tmpl", &templateData{Form: form})
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
