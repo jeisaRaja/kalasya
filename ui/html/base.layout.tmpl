@@ -23,7 +23,7 @@
       <a href="/blog/{{.AuthenticatedUser.Subdomain}}"
         >{{.AuthenticatedUser.BlogName}}</a
       >
-      <a href="/dashboard">Dashboard</a>
+      <a href="/blog/{{.AuthenticatedUser.Subdomain}}/dashboard">Dashboard</a>
       <form method="POST" action="/logout" class="logout">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <button type="submmit">Logout</button>

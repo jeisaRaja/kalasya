@@ -72,6 +72,7 @@ func (app *application) authorizedUser(r *http.Request) bool {
 		return false
 	}
 	urlSubdomain := chi.URLParam(r, "subdomain")
+  app.infoLog.Println(urlSubdomain)
 	if user.Subdomain != urlSubdomain {
 		return false
 	}

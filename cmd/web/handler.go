@@ -227,8 +227,10 @@ func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	posts, err := app.models.BlogPost.GetPosts(*blogID)
-  app.infoLog.Println(posts)
-  app.infoLog.Println(*blogID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+    return
+	}
 	app.render(w, r, "dashboardPosts.page.tmpl", &templateData{BlogPosts: posts})
 }
 
@@ -283,7 +285,7 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
-func (app *application) dashboardEditPostPage(w http.ResponseWriter, r *http.Request) {
+func (app *application) dashboardPostPage(w http.ResponseWriter, r *http.Request) {
 	postSlug := chi.URLParam(r, "post")
 	if postSlug == "" {
 		app.notFoundResponse(w, r)

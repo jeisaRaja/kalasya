@@ -21,7 +21,7 @@
       <a href="/blog/{{.AuthenticatedUser.Subdomain}}"
         >{{.AuthenticatedUser.BlogName}}</a
       >
-      <a href="/dashboard">Dashboard</a>
+      <a href="/blog/{.AuthenticatedUser.Subdomain}/dashboard">Dashboard</a>
       <form method="POST" action="/logout" class="logout">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <button type="submmit">Logout</button>
@@ -33,9 +33,9 @@
     </nav>
     <diV>
       <nav class="blog-dashboard-nav">
-        <a href="/dashboard">Home</a>
-        <a href="/dashboard/posts">Posts</a>
-        <a href="/dashboard/pages">Pages</a>
+        <a href="/blog/{{.AuthenticatedUser.Subdomain}}/dashboard">Home</a>
+        <a href="/blog/{{.AuthenticatedUser.Subdomain}}/dashboard/posts">Posts</a>
+        <a href="/blog/{{.AuthenticatedUser.Subdomain}}/dashboard/pages">Pages</a>
         <a href="/themes">Themes</a>
         <a href="/emails">Emails</a>
         <a href="/upgrade">Upgrade</a>

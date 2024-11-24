@@ -14,6 +14,7 @@ type BlogPost struct {
 	Slug        string
 	Title       string
 	Content     string
+	Subdomain   string
 	ContentHTML template.HTML
 	Published   bool
 	CreatedAt   time.Time

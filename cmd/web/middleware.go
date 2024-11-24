@@ -79,7 +79,7 @@ func (app *application) requireAuthorizedUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorized := app.authorizedUser(r)
 		if !authorized {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			app.notFoundResponse(w, r)
 			return
 		}
 		next.ServeHTTP(w, r)

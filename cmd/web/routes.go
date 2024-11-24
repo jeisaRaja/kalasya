@@ -41,13 +41,14 @@ func (app *application) routes(r *chi.Mux) {
 		r.Get("/blog/{subdomain}", app.blogHomePage)
 
 		// Authenticated routes
-		r.Route("/dashboard", func(r chi.Router) {
+    r.Route("/blog/{subdomain}/dashboard", func(r chi.Router) {
 			r.Use(app.requireAuthenticatedUser)
+      r.Use(app.requireAuthorizedUser)
 
 			r.Get("/", app.dashboardPage)
 			r.Get("/posts", app.dashboardPostsPage)
+      r.Get("/posts/{post}", app.dashboardPostPage)
       r.Post("/posts", app.createPost)
-      r.Get("/posts/{post}", app.dashboardEditPostPage)
       r.Get("/create-post" , app.dashboardCreatePostPage)
 			r.Post("/home", app.updateBlogHome)
 		})

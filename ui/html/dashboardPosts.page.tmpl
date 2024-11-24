@@ -1,11 +1,11 @@
 {{template "dashboardBase" .}} {{define "title"}}Posts | Dashboard{{end}}
 {{define "body"}}
 <main>
-  <a href="/dashboard/create-post">Create New Post</a>
+  <a href="/blog/{{.AuthenticatedUser.Subdomain}}/dashboard/create-post">Create New Post</a>
   <section id="posts">
     <h3>Old Posts:</h3>
     {{range .BlogPosts}}
-      <li>{{.Title}}</li>
+    <li><a href="/blog/{{$.AuthenticatedUser.Subdomain}}/dashboard/posts/{{.Slug}}">{{.Title}}</a></li>
     {{end}}
     <ul></ul>
   </section>
