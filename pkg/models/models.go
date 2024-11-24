@@ -21,8 +21,11 @@ type Models struct {
 	}
 	Blogs interface {
 		Get(subdomain string) (*Blog, *BlogPost, error)
+		GetID(subdomain string) (*int64, error)
 	}
 	BlogPost interface {
+		GetPosts(blogID int64) ([]*BlogPost, error)
+		GetBySlug(slug string) (*BlogPost, error)
 		Update(blog *Blog, post *BlogPost) error
 		Insert(post *BlogPost) error
 	}

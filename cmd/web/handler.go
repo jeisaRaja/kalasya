@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -212,13 +213,30 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "dashboardPosts.page.tmpl", nil)
+	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	if !ok {
+		app.notFoundResponse(w, r)
+		return
+	}
+	blogID, err := app.models.Blogs.GetID(user.Subdomain)
+	if err == models.ErrRecordNotFound {
+		app.notFoundResponse(w, r)
+		return
+	} else if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	posts, err := app.models.BlogPost.GetPosts(*blogID)
+  app.infoLog.Println(posts)
+  app.infoLog.Println(*blogID)
+	app.render(w, r, "dashboardPosts.page.tmpl", &templateData{BlogPosts: posts})
 }
 
 func (app *application) dashboardCreatePostPage(w http.ResponseWriter, r *http.Request) {
 	form := forms.New(r.PostForm)
-	app.render(w, r, "dashboardCreatePost.page.tmpl", &templateData{
-		Form: form,
+	app.render(w, r, "dashboardPost.page.tmpl", &templateData{
+		Form:     form,
+		BlogPost: &models.BlogPost{},
 	})
 }
 
@@ -263,4 +281,28 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func (app *application) dashboardEditPostPage(w http.ResponseWriter, r *http.Request) {
+	postSlug := chi.URLParam(r, "post")
+	if postSlug == "" {
+		app.notFoundResponse(w, r)
+		return
+	}
+	post, err := app.models.BlogPost.GetBySlug(postSlug)
+	if err == models.ErrRecordNotFound {
+		app.notFoundResponse(w, r)
+		return
+	} else if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	post.IsEdit = true
+
+	form := forms.New(url.Values{})
+	form.Add("title", post.Title)
+	form.Add("content", post.Content)
+	form.Add("published", strconv.FormatBool(post.Published))
+
+	app.render(w, r, "dashboardPost.page.tmpl", &templateData{Form: form, BlogPost: post})
 }

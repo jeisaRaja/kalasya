@@ -24,6 +24,19 @@ type BlogModel struct {
 	DB *sql.DB
 }
 
+func (m BlogModel) GetID(subdomain string) (*int64, error) {
+	var id int64
+	stmt := `SELECT id FROM blogs WHERE subdomain = $1`
+	err := m.DB.QueryRow(stmt, subdomain).Scan(&id)
+	if err == ErrRecordNotFound {
+		return nil, ErrRecordNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &id, nil
+}
+
 func (m BlogModel) Get(subdomain string) (*Blog, *BlogPost, error) {
 	var blog Blog
 	var blogPost BlogPost

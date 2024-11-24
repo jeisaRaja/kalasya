@@ -260,9 +260,9 @@ textarea:focus {
 
 /* General styling for the blog article */
 article {
-    font-family: 'Garamond', 'Book Antiqua', serif;
+    font-family:'EB Garamond'; 
     line-height: 1.6;
-    font-size: 16px;
+    font-size: 20px;
     color: var(--text-color);
     margin: 0 auto;
     max-width: 800px;
