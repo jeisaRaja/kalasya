@@ -229,7 +229,7 @@ func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Reques
 	posts, err := app.models.BlogPost.GetPosts(*blogID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
-    return
+		return
 	}
 	app.render(w, r, "dashboardPosts.page.tmpl", &templateData{BlogPosts: posts})
 }
@@ -307,4 +307,19 @@ func (app *application) dashboardPostPage(w http.ResponseWriter, r *http.Request
 	form.Add("published", strconv.FormatBool(post.Published))
 
 	app.render(w, r, "dashboardPost.page.tmpl", &templateData{Form: form, BlogPost: post})
+}
+
+func (app *application) blogPage(w http.ResponseWriter, r *http.Request) {
+	subdomain := chi.URLParam(r, "subdomain")
+	blog, _, err := app.models.Blogs.Get(subdomain)
+	if err == models.ErrRecordNotFound {
+		app.notFoundResponse(w, r)
+		return
+	} else if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	blog.NavHTML, err = app.parseBlogNav(blog.Nav, subdomain)
+
+	app.render(w, r, "blogPosts.page.tmpl", &templateData{Blog: blog})
 }

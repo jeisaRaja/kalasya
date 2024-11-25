@@ -53,7 +53,7 @@ func (m UserModel) Insert(u *User) error {
 		return err
 	}
 
-	nav := "[Home](/) [Blog](/blog/)"
+	nav := "[Home](/) [Posts](/posts/)"
 
 	blog := Blog{
 		UserID:    u.ID,
