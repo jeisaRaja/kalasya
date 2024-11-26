@@ -30,8 +30,8 @@ type templateData struct {
 	Flash             string
 	Error             Error
 	Blog              *models.Blog
-	BlogPost          *models.BlogPost
-	BlogPosts         []*models.BlogPost
+	Post              *models.Post
+	Posts             []*models.Post
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

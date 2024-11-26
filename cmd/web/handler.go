@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -50,21 +51,17 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.models.Users.Exists(&user)
+	err = app.service.CreateUserWithBlog(&user)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrEmailDuplicate):
 			form.Errors.Add("email", "email taken")
 		case errors.Is(err, models.ErrSubdomainDuplicate):
 			form.Errors.Add("subdomain", "subdomain taken")
+		default:
+			app.serverErrorResponse(w, r, err)
+			return
 		}
-		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
-		return
-	}
-
-	err = app.models.Users.Insert(&user)
-	if err != nil {
-		app.errorLog.Println(err)
 		app.render(w, r, "register.page.tmpl", &templateData{Form: form})
 		return
 	}
@@ -87,9 +84,15 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
+	if err != nil {
+		app.errorLog.Println("Failed to parse form data:", err)
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 	form := forms.New(r.PostForm)
-	id, err := app.models.Users.Authenticate(form.Get("email"), form.Get("password"))
+	id, err := app.service.AuthenticateUser(form.Get("email"), form.Get("password"))
 	if err == models.ErrInvalidCredentials {
+		app.infoLog.Println("invalid credentials")
 		form.Errors.Add("generic", "Email or Password is incorrect")
 		app.render(w, r, "login.page.tmpl", &templateData{Form: form})
 		return
@@ -99,14 +102,24 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if id == nil {
+		app.errorLog.Println("AuthenticateUser returned nil ID")
+		app.serverErrorResponse(w, r, errors.New("server error: nil ID returned"))
+		return
+	}
+
 	userSession, err := app.session.Get(r, "user-session")
 	if err != nil {
+		app.infoLog.Println("error when getting session")
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	userSession.Values["user_id"] = id
+
+	app.infoLog.Println("id is ", *id)
+	userSession.Values["user_id"] = *id
 	err = userSession.Save(r, w)
 	if err != nil {
+		app.infoLog.Println("error when setting session value")
 		app.serverErrorResponse(w, r, err)
 		return
 	}
@@ -138,8 +151,8 @@ func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.render(w, r, "blogPost.page.tmpl", &templateData{
-		Blog:     blog,
-		BlogPost: blogPost,
+		Blog: blog,
+		Post: blogPost,
 	})
 }
 
@@ -205,11 +218,11 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 	form := forms.New(r.PostForm)
 	value := form.Get("homeContent")
 	post.Content = strings.TrimSpace(value)
-	err = app.models.BlogPost.Update(blog, post)
+	err = app.models.Post.Update(blog, post)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/blog/%s/dashboard", blog.Subdomain), http.StatusSeeOther)
 }
 
 func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Request) {
@@ -218,7 +231,7 @@ func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Reques
 		app.notFoundResponse(w, r)
 		return
 	}
-	blogID, err := app.models.Blogs.GetID(user.Subdomain)
+	posts, err := app.service.GetPosts(user.Subdomain)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return
@@ -226,19 +239,16 @@ func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	posts, err := app.models.BlogPost.GetPosts(*blogID)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-	app.render(w, r, "dashboardPosts.page.tmpl", &templateData{BlogPosts: posts})
+	app.render(w, r, "dashboardPosts.page.tmpl", &templateData{Posts: posts})
 }
 
 func (app *application) dashboardCreatePostPage(w http.ResponseWriter, r *http.Request) {
+	subdomain := chi.URLParam(r, "subdomain")
 	form := forms.New(r.PostForm)
 	app.render(w, r, "dashboardPost.page.tmpl", &templateData{
-		Form:     form,
-		BlogPost: &models.BlogPost{},
+		Form: form,
+		Post: &models.Post{},
+		Blog: &models.Blog{Subdomain: subdomain},
 	})
 }
 
@@ -266,7 +276,7 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 
 	publish := r.PostFormValue("publish") == "true"
 
-	post := models.BlogPost{
+	post := models.Post{
 		BlogID:    blog.ID,
 		Slug:      slug.Make(form.Get("title")),
 		Title:     form.Get("title"),
@@ -276,13 +286,13 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt: time.Now().UTC(),
 	}
 
-	err = app.models.BlogPost.Insert(&post)
+	err = app.models.Post.CreatePost(&post)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (app *application) dashboardPostPage(w http.ResponseWriter, r *http.Request) {
@@ -291,7 +301,7 @@ func (app *application) dashboardPostPage(w http.ResponseWriter, r *http.Request
 		app.notFoundResponse(w, r)
 		return
 	}
-	post, err := app.models.BlogPost.GetBySlug(postSlug)
+	post, err := app.models.Post.GetBySlug(postSlug)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return
@@ -306,7 +316,7 @@ func (app *application) dashboardPostPage(w http.ResponseWriter, r *http.Request
 	form.Add("content", post.Content)
 	form.Add("published", strconv.FormatBool(post.Published))
 
-	app.render(w, r, "dashboardPost.page.tmpl", &templateData{Form: form, BlogPost: post})
+	app.render(w, r, "dashboardPost.page.tmpl", &templateData{Form: form, Post: post})
 }
 
 func (app *application) blogPage(w http.ResponseWriter, r *http.Request) {

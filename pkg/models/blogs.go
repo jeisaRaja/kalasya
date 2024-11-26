@@ -24,6 +24,19 @@ type BlogModel struct {
 	DB *sql.DB
 }
 
+func (m *BlogModel) CreateBlog(b *Blog) error {
+	err := m.DB.QueryRow(`
+        INSERT INTO blogs (user_id, name, subdomain, nav, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id;`,
+		b.UserID, b.Name, b.Subdomain, b.Nav, time.Now().UTC(), time.Now().UTC()).Scan(&b.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m BlogModel) GetID(subdomain string) (*int64, error) {
 	var id int64
 	stmt := `SELECT id FROM blogs WHERE subdomain = $1`
@@ -37,9 +50,9 @@ func (m BlogModel) GetID(subdomain string) (*int64, error) {
 	return &id, nil
 }
 
-func (m BlogModel) Get(subdomain string) (*Blog, *BlogPost, error) {
+func (m BlogModel) Get(subdomain string) (*Blog, *Post, error) {
 	var blog Blog
-	var blogPost BlogPost
+	var blogPost Post
 	query := `SELECT id, name, subdomain, nav, user_id, main_post_id, updated_at FROM blogs WHERE subdomain = $1`
 	err := m.DB.QueryRow(query, subdomain).Scan(&blog.ID, &blog.Name, &blog.Subdomain, &blog.Nav, &blog.UserID, &blog.MainPostID, &blog.UpdatedAt)
 	if err != nil {

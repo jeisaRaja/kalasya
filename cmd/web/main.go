@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/sessions"
 	"github.com/jeisaraja/kalasya/pkg/models"
+	"github.com/jeisaraja/kalasya/pkg/services"
 	_ "github.com/lib/pq"
 )
 
@@ -34,6 +35,7 @@ type application struct {
 	errorLog      *log.Logger
 	cfg           config
 	templateCache map[string]*template.Template
+	service       services.Service
 	models        models.Models
 	session       *sessions.CookieStore
 }
@@ -82,6 +84,7 @@ func main() {
 		errorLog:      errorlogger,
 		templateCache: templateCache,
 		models:        models.New(db),
+		service:       *services.New(db),
 		session:       sessionStore,
 	}
 

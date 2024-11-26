@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type BlogPost struct {
+type Post struct {
 	ID          int64
 	BlogID      int64
 	Slug        string
@@ -22,15 +22,15 @@ type BlogPost struct {
 	IsEdit      bool
 }
 
-type BlogPostModel struct {
+type PostModel struct {
 	DB *sql.DB
 }
 
-func (m BlogPostModel) Get() {
+func (m PostModel) Get() {
 
 }
 
-func (m BlogPostModel) Update(blog *Blog, post *BlogPost) error {
+func (m PostModel) Update(blog *Blog, post *Post) error {
 	stmt := `
     UPDATE blog_posts
     SET content = $1, updated_at = $2
@@ -44,7 +44,7 @@ func (m BlogPostModel) Update(blog *Blog, post *BlogPost) error {
 	return nil
 }
 
-func (m BlogPostModel) Insert(post *BlogPost) error {
+func (m PostModel) CreatePost(post *Post) error {
 	stmt := `INSERT INTO blog_posts (slug, blog_id, title, content, published) VALUES ($1, $2, $3, $4, $5)`
 	_, err := m.DB.Exec(stmt, post.Slug, post.BlogID, post.Title, post.Content, post.Published)
 	if err != nil {
@@ -54,8 +54,8 @@ func (m BlogPostModel) Insert(post *BlogPost) error {
 	return nil
 }
 
-func (m BlogPostModel) GetPosts(blogID int64) ([]*BlogPost, error) {
-	var posts []*BlogPost
+func (m PostModel) GetPosts(blogID int64) ([]*Post, error) {
+	var posts []*Post
 	stmt := `SELECT id, blog_id, slug, title 
          FROM blog_posts 
          WHERE blog_id = $1 AND slug <> '' AND title <> ''`
@@ -70,7 +70,7 @@ func (m BlogPostModel) GetPosts(blogID int64) ([]*BlogPost, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var post BlogPost
+		var post Post
 		err := rows.Scan(&post.ID, &post.BlogID, &post.Slug, &post.Title)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
@@ -86,8 +86,8 @@ func (m BlogPostModel) GetPosts(blogID int64) ([]*BlogPost, error) {
 	return posts, nil
 }
 
-func (m BlogPostModel) GetBySlug(slug string) (*BlogPost, error) {
-	var post BlogPost
+func (m PostModel) GetBySlug(slug string) (*Post, error) {
+	var post Post
 	stmt := `SELECT id, blog_id, slug, title, content, published, created_at, updated_at FROM blog_posts WHERE slug = $1`
 	err := m.DB.QueryRow(stmt, slug).Scan(&post.ID, &post.BlogID, &post.Slug, &post.Title, &post.Content, &post.Published, &post.CreatedAt, &post.UpdatedAt)
 	if err == ErrRecordNotFound {

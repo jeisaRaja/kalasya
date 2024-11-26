@@ -17,24 +17,24 @@ type Models struct {
 		Insert(u *User) error
 		Get(id int64) (*User, error)
 		Exists(user *User) error
-		Authenticate(email, password string) (int, error)
+		GetUserPassword(email, password string) (*User, error)
 	}
 	Blogs interface {
-		Get(subdomain string) (*Blog, *BlogPost, error)
+		Get(subdomain string) (*Blog, *Post, error)
 		GetID(subdomain string) (*int64, error)
 	}
-	BlogPost interface {
-		GetPosts(blogID int64) ([]*BlogPost, error)
-		GetBySlug(slug string) (*BlogPost, error)
-		Update(blog *Blog, post *BlogPost) error
-		Insert(post *BlogPost) error
+	Post interface {
+		GetPosts(blogID int64) ([]*Post, error)
+		GetBySlug(slug string) (*Post, error)
+		Update(blog *Blog, post *Post) error
+		CreatePost(post *Post) error
 	}
 }
 
 func New(db *sql.DB) Models {
 	return Models{
-		Users:    UserModel{DB: db},
-		Blogs:    BlogModel{DB: db},
-		BlogPost: BlogPostModel{DB: db},
+		Users: UserModel{DB: db},
+		Blogs: BlogModel{DB: db},
+		Post:  PostModel{DB: db},
 	}
 }

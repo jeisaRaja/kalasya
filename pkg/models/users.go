@@ -10,18 +10,39 @@ import (
 )
 
 type User struct {
-	ID        int64
-	Name      string
-	Email     string
-	Password  string
-	BlogName  string
-	Subdomain string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID           int64
+	Name         string
+	Email        string
+	Password     string
+	PasswordHash []byte
+	BlogName     string
+	Subdomain    string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 type UserModel struct {
 	DB *sql.DB
+}
+
+func (m UserModel) CreateUser(u *User) error {
+	err := m.Exists(u)
+	if err != nil {
+		return err
+	}
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(u.Password), 12)
+	if err != nil {
+		return err
+	}
+	err = m.DB.QueryRow(`
+        INSERT INTO users (email, name, password_hash, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id`, u.Email, u.Name, passwordHash, time.Now().UTC(), time.Now().UTC()).Scan(&u.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m UserModel) Insert(u *User) error {
@@ -74,7 +95,7 @@ func (m UserModel) Insert(u *User) error {
 		return err
 	}
 
-	var post BlogPost
+	var post Post
 	err = tx.QueryRow(`
 	INSERT INTO blog_posts (blog_id, title, content, published, created_at, updated_at)
 	VALUES ($1, $2, $3, $4, $5, $6)
@@ -133,24 +154,17 @@ func (m UserModel) Exists(user *User) error {
 	return nil
 }
 
-func (m UserModel) Authenticate(email, password string) (int, error) {
-	var id int
-	var passwordHash []byte
+func (m UserModel) GetUserPassword(email, password string) (*User, error) {
+	var user User
 	row := m.DB.QueryRow("SELECT id, password_hash FROM users WHERE email = $1", email)
-	err := row.Scan(&id, &passwordHash)
+	err := row.Scan(&user.ID, &user.PasswordHash)
 	if err == sql.ErrNoRows {
-		return 0, ErrInvalidCredentials
+		return nil, ErrInvalidCredentials
 	} else if err != nil {
-		return 0, err
-	}
-	err = bcrypt.CompareHashAndPassword(passwordHash, []byte(password))
-	if err == bcrypt.ErrMismatchedHashAndPassword {
-		return 0, ErrInvalidCredentials
-	} else if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return id, nil
+	return &user, nil
 }
 
 func ValidateUserRegistration(form *forms.Form) {

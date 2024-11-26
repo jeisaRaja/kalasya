@@ -1,7 +1,7 @@
 {{template "dashboardBase" .}} {{define "title"}}New Post | Dashboard{{end}}
 {{define "body"}}
 <main>
-  <form action="{{if .BlogPost.IsEdit}}/dashboard/posts/{{.BlogPost.Slug}}{{else}}/dashboard/posts{{end}}" method="POST">
+  <form action="{{if .Post.IsEdit}}/blog/{{.Blog.Subdomain}}/dashboard/posts/{{.BlogPost.Slug}}{{else}}/blog/{{.Blog.Subdomain}}/dashboard/posts{{end}}" method="POST">
     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
     <label for="title">Title:</label>
     <input type="text" id="title" name="title" value="{{.Form.Get "title"}}"/>

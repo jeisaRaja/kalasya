@@ -4,7 +4,7 @@
   <a href="/blog/{{.AuthenticatedUser.Subdomain}}/dashboard/create-post">Create New Post</a>
   <section id="posts">
     <h3>Old Posts:</h3>
-    {{range .BlogPosts}}
+    {{range .Posts}}
     <li><a href="/blog/{{$.AuthenticatedUser.Subdomain}}/dashboard/posts/{{.Slug}}">{{.Title}}</a></li>
     {{end}}
     <ul></ul>
