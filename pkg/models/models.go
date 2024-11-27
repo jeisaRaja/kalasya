@@ -5,6 +5,17 @@ import (
 	"errors"
 )
 
+const (
+	Title     = "title"
+	Content   = "content"
+	Published = "published"
+	HomeID    = "main_post_id"
+	Name      = "name"
+	Nav       = "nav"
+	CreatedAt = "created_at"
+	UpdatedAt = "updated_at"
+)
+
 var (
 	ErrRecordNotFound     = errors.New("record not found")
 	ErrEmailDuplicate     = errors.New("user with this email exists")
@@ -13,28 +24,15 @@ var (
 )
 
 type Models struct {
-	Users interface {
-		Insert(u *User) error
-		Get(id int64) (*User, error)
-		Exists(user *User) error
-		GetUserPassword(email, password string) (*User, error)
-	}
-	Blogs interface {
-		Get(subdomain string) (*Blog, *Post, error)
-		GetID(subdomain string) (*int64, error)
-	}
-	Post interface {
-		GetPosts(blogID int64) ([]*Post, error)
-		GetBySlug(slug string) (*Post, error)
-		Update(blog *Blog, post *Post) error
-		CreatePost(post *Post) error
-	}
+	User UserModel
+	Blog BlogModel
+	Post PostModel
 }
 
 func New(db *sql.DB) Models {
 	return Models{
-		Users: UserModel{DB: db},
-		Blogs: BlogModel{DB: db},
-		Post:  PostModel{DB: db},
+		User: UserModel{DB: db},
+		Blog: BlogModel{DB: db},
+		Post: PostModel{DB: db},
 	}
 }

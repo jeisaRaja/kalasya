@@ -5,43 +5,69 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"strconv"
 	"time"
 )
 
 type Post struct {
-	ID          int64
-	BlogID      int64
-	Slug        string
-	Title       string
-	Content     string
-	Subdomain   string
-	ContentHTML template.HTML
-	Published   bool
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	IsEdit      bool
+	ID        int
+	BlogID    int
+	Slug      string
+	Title     string
+	Content   string
+	Published bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type PostView struct {
+	Title     string
+	Content   template.HTML
+	Published bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	IsEdit    bool
+}
+
+type PostList struct {
+	Title     string
+	Slug      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type PostModel struct {
 	DB *sql.DB
 }
 
-func (m PostModel) Get() {
-
-}
-
-func (m PostModel) Update(blog *Blog, post *Post) error {
-	stmt := `
-    UPDATE blog_posts
-    SET content = $1, updated_at = $2
-    WHERE id = $3;`
-
-	_, err := m.DB.Exec(stmt, post.Content, time.Now().UTC(), blog.MainPostID)
-	if err != nil {
-		return fmt.Errorf("failed to update blog_posts: %v", err)
+func (m *BlogModel) UpdateSelective(postID int, updates map[string]interface{}) error {
+	if len(updates) == 0 {
+		return nil
 	}
 
-	return nil
+	query := "UPDATE blog_posts SET "
+	args := []interface{}{}
+	i := 1
+	for column, value := range updates {
+		if i > 1 {
+			query += ", "
+		}
+		query += column + " = $" + strconv.Itoa(i)
+		args = append(args, value)
+		i++
+	}
+	curTime := time.Now()
+	args = append(args, curTime)
+	query += "updated_at = $" + strconv.Itoa(i)
+	query += " WHERE id = $" + strconv.Itoa(i+1)
+	args = append(args, postID)
+
+	_, err := m.DB.Exec(query, args...)
+	return err
+}
+
+func (m PostModel) Get() {
+
 }
 
 func (m PostModel) CreatePost(post *Post) error {
@@ -54,12 +80,24 @@ func (m PostModel) CreatePost(post *Post) error {
 	return nil
 }
 
-func (m PostModel) GetPosts(blogID int64) ([]*Post, error) {
+func (m PostModel) GetPostsBySubdomain(subdomain string) ([]*Post, error) {
 	var posts []*Post
-	stmt := `SELECT id, blog_id, slug, title 
-         FROM blog_posts 
-         WHERE blog_id = $1 AND slug <> '' AND title <> ''`
-	rows, err := m.DB.Query(stmt, blogID)
+	stmt := `
+      SELECT 
+          bp.id, 
+          bp.slug, 
+          bp.title, 
+          bp.created_at, 
+          bp.updated_at
+      FROM 
+          blog_posts bp
+      JOIN 
+          blogs b ON bp.blog_id = b.id
+      WHERE 
+          b.subdomain = $1
+          AND (bp.published = TRUE OR $2 = TRUE);
+`
+	rows, err := m.DB.Query(stmt, subdomain)
 	if err == sql.ErrNoRows {
 		log.Printf("no rows found")
 		return nil, err
@@ -71,7 +109,7 @@ func (m PostModel) GetPosts(blogID int64) ([]*Post, error) {
 
 	for rows.Next() {
 		var post Post
-		err := rows.Scan(&post.ID, &post.BlogID, &post.Slug, &post.Title)
+		err := rows.Scan(&post.ID, &post.Slug, &post.Title, &post.CreatedAt, &post.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
@@ -86,14 +124,16 @@ func (m PostModel) GetPosts(blogID int64) ([]*Post, error) {
 	return posts, nil
 }
 
-func (m PostModel) GetBySlug(slug string) (*Post, error) {
+func (m PostModel) GetByField(field string, value interface{}) (*Post, error) {
+	query := fmt.Sprintf("SELECT id, blog_id, slug, title, content, published, created_at, updated_at FROM blog_posts WHERE %s = $1", field)
 	var post Post
-	stmt := `SELECT id, blog_id, slug, title, content, published, created_at, updated_at FROM blog_posts WHERE slug = $1`
-	err := m.DB.QueryRow(stmt, slug).Scan(&post.ID, &post.BlogID, &post.Slug, &post.Title, &post.Content, &post.Published, &post.CreatedAt, &post.UpdatedAt)
+	err := m.DB.QueryRow(query, value).Scan(&post.ID, &post.BlogID, &post.Slug, &post.Title, &post.Content, &post.Published, &post.CreatedAt, &post.UpdatedAt)
+
 	if err == ErrRecordNotFound {
 		return nil, ErrRecordNotFound
 	} else if err != nil {
 		return nil, err
 	}
+
 	return &post, nil
 }

@@ -44,14 +44,14 @@ func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler
 func (app *application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := app.session.Get(r, "user-session")
-		userID, exists := session.Values["user_id"].(int64)
+		userID, exists := session.Values["user_id"].(int)
 		if !exists {
 			app.infoLog.Println("session not exist")
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		user, err := app.models.Users.Get(int64(userID))
+		user, err := app.models.Users.Get(int(userID))
 		if err == models.ErrRecordNotFound {
 			app.infoLog.Println("no record find [from auth middleware]")
 			delete(session.Values, "user_id")

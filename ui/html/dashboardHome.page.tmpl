@@ -2,7 +2,7 @@
 {{define "body"}}
 <main>
   <h1>Welcome to your Dashboard, {{.AuthenticatedUser.Name}}</h1>
-  <form action="/blog/{{.AuthenticatedUser.Subdomain}}/home" method="POST">
+  <form action="/blog/{{.AuthenticatedUser.Subdomain}}/dashboard/home" method="POST">
     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
     <label for="home-content">Edit your homepage content:</label>
     <textarea id="home-content" name="homeContent" rows="10" cols="50">

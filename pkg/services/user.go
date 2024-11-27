@@ -7,8 +7,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *Service) AuthenticateUser(email, password string) (*int64, error) {
-	u, err := s.users.GetUserPassword(email, password)
+func (s *Service) AuthenticateUser(email, password string) (*int, error) {
+	u, err := s.users.Get(email)
 	err = bcrypt.CompareHashAndPassword(u.PasswordHash, []byte(password))
 	if err != nil {
 		return nil, models.ErrInvalidCredentials
@@ -17,7 +17,7 @@ func (s *Service) AuthenticateUser(email, password string) (*int64, error) {
 	return &u.ID, nil
 }
 
-func (s *Service) CreateUserWithBlog(u *models.User) error {
+func (s *Service) CreateUserWithBlog(u *models.UserRegistration) error {
 	tx, err := s.users.DB.Begin()
 	if err != nil {
 		return err

@@ -29,8 +29,8 @@ type templateData struct {
 	Form              *forms.Form
 	Flash             string
 	Error             Error
-	Blog              *models.Blog
-	Post              *models.Post
+	Blog              *models.BlogView
+	Post              *models.PostView
 	Posts             []*models.Post
 }
 
