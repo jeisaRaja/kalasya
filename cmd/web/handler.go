@@ -44,7 +44,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
+	var user models.UserRegistration
 	err = form.GetInstance(&user)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -129,10 +129,12 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 	subdomain := chi.URLParam(r, "subdomain")
-	blog, blogPost, err := app.models.Blogs.Get(subdomain)
-	if err != nil {
-		app.errorLog.Println(err)
+	post, err := app.service.GetBlogHome(subdomain)
+	if err == nil {
 		app.notFoundResponse(w, r)
+		return
+	} else if err != nil {
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 	if blogPost.Content == "" {

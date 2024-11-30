@@ -66,10 +66,6 @@ func (m *BlogModel) UpdateSelective(postID int, updates map[string]interface{}) 
 	return err
 }
 
-func (m PostModel) Get() {
-
-}
-
 func (m PostModel) CreatePost(post *Post) error {
 	stmt := `INSERT INTO blog_posts (slug, blog_id, title, content, published) VALUES ($1, $2, $3, $4, $5)`
 	_, err := m.DB.Exec(stmt, post.Slug, post.BlogID, post.Title, post.Content, post.Published)
@@ -80,7 +76,7 @@ func (m PostModel) CreatePost(post *Post) error {
 	return nil
 }
 
-func (m PostModel) GetPostsBySubdomain(subdomain string) ([]*Post, error) {
+func (m PostModel) GetPostsBySubdomain(subdomain string, author bool) ([]*Post, error) {
 	var posts []*Post
 	stmt := `
       SELECT 
@@ -95,9 +91,9 @@ func (m PostModel) GetPostsBySubdomain(subdomain string) ([]*Post, error) {
           blogs b ON bp.blog_id = b.id
       WHERE 
           b.subdomain = $1
-          AND (bp.published = TRUE OR $2 = TRUE);
-`
-	rows, err := m.DB.Query(stmt, subdomain)
+          AND (bp.published = TRUE OR $2 = TRUE);`
+
+	rows, err := m.DB.Query(stmt, subdomain, author)
 	if err == sql.ErrNoRows {
 		log.Printf("no rows found")
 		return nil, err
@@ -130,6 +126,42 @@ func (m PostModel) GetByField(field string, value interface{}) (*Post, error) {
 	err := m.DB.QueryRow(query, value).Scan(&post.ID, &post.BlogID, &post.Slug, &post.Title, &post.Content, &post.Published, &post.CreatedAt, &post.UpdatedAt)
 
 	if err == ErrRecordNotFound {
+		return nil, ErrRecordNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}
+
+func (m PostModel) Get(slug string, author bool) (*PostView, error) {
+	var post PostView
+	stmt := `SELECT title, content, published, created_at, updated_at FROM blog_posts WHERE slug = $1 AND (published = TRUE OR $2 = TRUE)`
+	err := m.DB.QueryRow(stmt, slug, author).Scan(&post.Title, &post.Content, &post.Published, &post.CreatedAt, &post.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, ErrRecordNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}
+
+func (m PostModel) GetHome(subdomain string) (*PostView, error) {
+	var post PostView
+	stmt := `
+    SELECT 
+        bp.title, 
+        bp.content, 
+        bp.published, 
+        bp.created_at, 
+        bp.updated_at
+    FROM blogs b
+    JOIN blog_posts bp ON b.main_post_id = bp.id
+    WHERE b.subdomain = $1;`
+
+	err := m.DB.QueryRow(stmt, subdomain).Scan(&post.Title, &post.Content, &post.Published, &post.CreatedAt, &post.UpdatedAt)
+	if err == sql.ErrNoRows {
 		return nil, ErrRecordNotFound
 	} else if err != nil {
 		return nil, err

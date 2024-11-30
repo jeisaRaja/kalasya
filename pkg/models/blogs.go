@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
 	"html/template"
 	"time"
 )
@@ -44,4 +43,3 @@ func (m *BlogModel) CreateBlog(b *Blog) error {
 
 	return nil
 }
-

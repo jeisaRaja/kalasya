@@ -1,12 +1,36 @@
 package services
 
-import "github.com/jeisaraja/kalasya/pkg/models"
+import (
+	"fmt"
 
-func (s *Service) GetPosts(subdomain string) ([]*models.Post, error) {
-	posts, err := s.posts.GetPostsBySubdomain(subdomain)
+	"github.com/jeisaraja/kalasya/pkg/models"
+)
+
+func (s *Service) GetPosts(subdomain string, author bool) ([]*models.Post, error) {
+	posts, err := s.posts.GetPostsBySubdomain(subdomain, author)
 	if err != nil {
 		return nil, err
 	}
 
 	return posts, nil
+}
+
+func (s *Service) GetPost(slug string, author bool) (*models.PostView, error) {
+	post, err := s.posts.Get(slug, author)
+	if err == models.ErrRecordNotFound {
+		return nil, fmt.Errorf("post not found: %w", err)
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to retrieve post: %w", err)
+	}
+
+	return post, nil
+}
+
+func (s *Service) GetBlogHome(subdomain string) (*models.PostView, error) {
+	post, err := s.posts.GetHome(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
+	return post, err
 }
