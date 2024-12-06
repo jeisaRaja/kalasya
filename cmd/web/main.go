@@ -29,6 +29,7 @@ type config struct {
 type contextKey string
 
 var contextKeyUser = contextKey("user")
+var contextKeyBlog = contextKey("blog")
 
 type application struct {
 	infoLog       *log.Logger

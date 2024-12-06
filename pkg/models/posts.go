@@ -21,12 +21,13 @@ type Post struct {
 }
 
 type PostView struct {
-	Title     string
-	Content   template.HTML
-	Published bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	IsEdit    bool
+	Title       string
+	Content     string
+	ContentHTML template.HTML
+	Published   bool
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	IsEdit      bool
 }
 
 type PostList struct {

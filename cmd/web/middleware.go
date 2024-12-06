@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jeisaraja/kalasya/pkg/models"
 )
 
@@ -41,6 +42,23 @@ func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler
 	})
 }
 
+func (app *application) addBlogInfo(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		subdomain := chi.URLParam(r, "subdomain")
+		if subdomain == "" {
+			app.notFoundResponse(w, r)
+			return
+		}
+		blogInfo, err := app.service.GetBlogInfo(subdomain)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		ctx := context.WithValue(r.Context(), contextKeyBlog, blogInfo)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func (app *application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := app.session.Get(r, "user-session")
@@ -51,7 +69,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := app.models.Users.Get(int(userID))
+		user, err := app.service.GetAuthenticatedUser(userID)
 		if err == models.ErrRecordNotFound {
 			app.infoLog.Println("no record find [from auth middleware]")
 			delete(session.Values, "user_id")

@@ -43,3 +43,29 @@ func (m *BlogModel) CreateBlog(b *Blog) error {
 
 	return nil
 }
+
+func (m *BlogModel) GetBlogView(subdomain string) (*BlogView, error) {
+	var blog BlogView
+	err := m.DB.QueryRow(`
+      SELECT 
+            b.name AS BlogName,
+            u.name AS AuthorName,
+            b.subdomain AS Subdomain,
+            b.nav AS NavHTML,
+            b.created_at AS CreatedAt,
+            b.updated_at AS UpdatedAt
+        FROM 
+            blogs b
+        JOIN 
+            users u ON b.user_id = u.id
+        WHERE 
+            b.subdomain = $1;
+  `, subdomain).Scan(&blog.Name, &blog.Author, &blog.Subdomain, &blog.NavHTML, &blog.CreatedAt, &blog.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, ErrRecordNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &blog, nil
+}

@@ -23,7 +23,7 @@ type Error struct {
 }
 
 type templateData struct {
-	AuthenticatedUser *models.User
+	AuthenticatedUser *models.UserClient
 	CurrentYear       int
 	CSRFToken         string
 	Form              *forms.Form

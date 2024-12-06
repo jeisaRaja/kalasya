@@ -137,24 +137,17 @@ func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	if blogPost.Content == "" {
-		blogPost.Content = "No Content Yet"
+	if post.Content == "" {
+		post.Content = "No Content Yet"
 	}
 
-	blogPost.ContentHTML, err = app.toHTML(blogPost.Content)
+	post.ContentHTML, err = app.toHTML(post.Content)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	blog.NavHTML, err = app.parseBlogNav(blog.Nav, blog.Subdomain)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
 	app.render(w, r, "blogPost.page.tmpl", &templateData{
-		Blog: blog,
-		Post: blogPost,
+		Post: post,
 	})
 }
 

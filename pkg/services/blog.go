@@ -34,3 +34,11 @@ func (s *Service) GetBlogHome(subdomain string) (*models.PostView, error) {
 
 	return post, err
 }
+
+func (s *Service) GetBlogInfo(subdomain string) (*models.BlogView, error) {
+	blog, err := s.blogs.GetBlogView(subdomain)
+	if err != nil {
+		return nil, err
+	}
+	return blog, nil
+}

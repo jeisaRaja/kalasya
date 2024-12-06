@@ -19,6 +19,13 @@ type User struct {
 	UpdatedAt    time.Time
 }
 
+type UserClient struct {
+	Email     string
+	Subdomain string
+	BlogName  string
+	Name      string
+}
+
 type UserRegistration struct {
 	ID        int
 	Subdomain string
@@ -82,6 +89,30 @@ func (m UserModel) Get(email string) (*User, error) {
 	var user User
 	row := m.DB.QueryRow("SELECT id, name, email, password_hash FROM users WHERE email = $1", email)
 	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.PasswordHash)
+	if err == sql.ErrNoRows {
+		return nil, ErrInvalidCredentials
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (m UserModel) GetUserClient(id int) (*UserClient, error) {
+	var user UserClient
+	row := m.DB.QueryRow(`
+      SELECT 
+          u.email AS Email,
+          b.subdomain AS Subdomain,
+          b.name AS BlogName,
+          u.name AS Name
+      FROM 
+          users u
+      JOIN 
+          blogs b ON u.id = b.user_id
+      WHERE 
+          u.id = $1;`, id)
+	err := row.Scan(&user.Email, &user.Subdomain, &user.BlogName, &user.Name)
 	if err == sql.ErrNoRows {
 		return nil, ErrInvalidCredentials
 	} else if err != nil {

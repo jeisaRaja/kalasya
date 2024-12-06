@@ -44,6 +44,9 @@ func (app *application) addDefaultData(td *templateData, r *http.Request, w http
 
 	td.CSRFToken = csrf.Token(r)
 
+	blogInfo := r.Context().Value(contextKeyBlog).(*models.BlogView)
+	td.Blog = blogInfo
+
 	session, err := app.session.Get(r, "user-session")
 	if err != nil {
 		td.Flash = ""
@@ -57,8 +60,8 @@ func (app *application) addDefaultData(td *templateData, r *http.Request, w http
 	return td
 }
 
-func (app *application) authenticatedUser(r *http.Request) *models.User {
-	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+func (app *application) authenticatedUser(r *http.Request) *models.UserClient {
+	user, ok := r.Context().Value(contextKeyUser).(*models.UserClient)
 	if !ok {
 		return nil
 	}
@@ -67,12 +70,12 @@ func (app *application) authenticatedUser(r *http.Request) *models.User {
 }
 
 func (app *application) authorizedUser(r *http.Request) bool {
-	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	user, ok := r.Context().Value(contextKeyUser).(*models.UserClient)
 	if !ok {
 		return false
 	}
 	urlSubdomain := chi.URLParam(r, "subdomain")
-  app.infoLog.Println(urlSubdomain)
+	app.infoLog.Println(urlSubdomain)
 	if user.Subdomain != urlSubdomain {
 		return false
 	}
