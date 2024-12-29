@@ -41,7 +41,7 @@ type PostModel struct {
 	DB *sql.DB
 }
 
-func (m *BlogModel) UpdateSelective(postID int, updates map[string]interface{}) error {
+func (m *PostModel) UpdateSelective(postID int, updates map[string]interface{}) error {
 	if len(updates) == 0 {
 		return nil
 	}

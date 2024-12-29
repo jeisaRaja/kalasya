@@ -151,14 +151,14 @@ func (app *application) blogHomePage(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (app *application) dashboardPage(w http.ResponseWriter, r *http.Request) {
+func (app *application) dashboardHomePage(w http.ResponseWriter, r *http.Request) {
 	form := forms.New(url.Values{})
-	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	user, ok := r.Context().Value(contextKeyUser).(*models.UserClient)
 	if !ok {
 		app.notFoundResponse(w, r)
 		return
 	}
-	_, post, err := app.models.Blogs.Get(user.Subdomain)
+	post, err := app.service.GetBlogHome(user.Subdomain)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return
@@ -191,12 +191,12 @@ func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	user, ok := r.Context().Value(contextKeyUser).(*models.UserClient)
 	if !ok {
 		app.notFoundResponse(w, r)
 		return
 	}
-	blog, post, err := app.models.Blogs.Get(user.Subdomain)
+	post, err := app.service.GetBlogHome(user.Subdomain)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return
@@ -214,6 +214,7 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 	value := form.Get("homeContent")
 	post.Content = strings.TrimSpace(value)
 	err = app.models.Post.Update(blog, post)
+	err = app.service.UpdateBlogPost(posi)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -296,7 +297,7 @@ func (app *application) dashboardPostPage(w http.ResponseWriter, r *http.Request
 		app.notFoundResponse(w, r)
 		return
 	}
-	post, err := app.models.Post.GetBySlug(postSlug)
+	post, err := app.service.GetPost(postSlug, true)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return

@@ -48,7 +48,7 @@ func (app *application) routes(r *chi.Mux) {
 			r.Use(app.requireAuthenticatedUser)
 			r.Use(app.requireAuthorizedUser)
 
-			r.Get("/", app.dashboardPage)
+			r.Get("/", app.dashboardHomePage)
 			r.Get("/posts", app.dashboardPostsPage)
 			r.Get("/posts/{post}", app.dashboardPostPage)
 			r.Post("/posts", app.createPost)

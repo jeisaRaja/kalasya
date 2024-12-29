@@ -74,3 +74,11 @@ func (s *Service) CreateUserWithBlog(u *models.UserRegistration) error {
 
 	return nil
 }
+
+func (s *Service) GetAuthenticatedUser(userID int) (*models.UserClient, error) {
+	user, err := s.users.GetUserClient(userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
