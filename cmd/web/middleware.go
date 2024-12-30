@@ -71,7 +71,6 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 
 		user, err := app.service.GetAuthenticatedUser(userID)
 		if err == models.ErrRecordNotFound {
-			app.infoLog.Println("no record find [from auth middleware]")
 			delete(session.Values, "user_id")
 			session.Save(r, w)
 			next.ServeHTTP(w, r)
@@ -81,7 +80,6 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		app.infoLog.Println("middleware authenticate success")
 		ctx := context.WithValue(r.Context(), contextKeyUser, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

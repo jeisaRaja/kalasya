@@ -191,11 +191,22 @@ func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
+	// Need to check if user is authenticated and if user is authorized to manage this blog by matching the user.subdomain with the blogInfo.subdomain
 	user, ok := r.Context().Value(contextKeyUser).(*models.UserClient)
 	if !ok {
 		app.notFoundResponse(w, r)
 		return
 	}
+	blogInfo, ok := r.Context().Value(contextKeyBlog).(*models.BlogView)
+	if !ok {
+		app.notFoundResponse(w, r)
+		return
+	}
+	if blogInfo.Subdomain != user.Subdomain {
+		app.notFoundResponse(w, r)
+		return
+	}
+
 	post, err := app.service.GetBlogHome(user.Subdomain)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
@@ -213,7 +224,6 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 	form := forms.New(r.PostForm)
 	value := form.Get("homeContent")
 	post.Content = strings.TrimSpace(value)
-	err = app.models.Post.Update(blog, post)
 	err = app.service.UpdateBlogPost(posi)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -222,12 +232,12 @@ func (app *application) updateBlogHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) dashboardPostsPage(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	user, ok := r.Context().Value(contextKeyUser).(*models.UserClient)
 	if !ok {
 		app.notFoundResponse(w, r)
 		return
 	}
-	posts, err := app.service.GetPosts(user.Subdomain)
+	posts, err := app.service.GetPosts(user.Subdomain, true)
 	if err == models.ErrRecordNotFound {
 		app.notFoundResponse(w, r)
 		return
@@ -243,13 +253,13 @@ func (app *application) dashboardCreatePostPage(w http.ResponseWriter, r *http.R
 	form := forms.New(r.PostForm)
 	app.render(w, r, "dashboardPost.page.tmpl", &templateData{
 		Form: form,
-		Post: &models.Post{},
-		Blog: &models.Blog{Subdomain: subdomain},
+		Post: &models.PostView{},
+		Blog: &models.BlogView{Subdomain: subdomain},
 	})
 }
 
 func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	user, ok := r.Context().Value(contextKeyUser).(*models.UserClient)
 	if !ok {
 		app.notFoundResponse(w, r)
 		return

@@ -170,3 +170,20 @@ func (m PostModel) GetHome(subdomain string) (*PostView, error) {
 
 	return &post, nil
 }
+
+func (m PostModel) GetBlogHomeID(subdomain string) (int, error) {
+	stmt := `
+    SELECT 
+      bp.id
+    FROM blogs b
+    JOIN blog_posts bp ON b.main_post_id = bp.id
+    WHERE b.subdomain = $1;`
+
+	var id int
+	err := m.DB.QueryRow(stmt, subdomain).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}

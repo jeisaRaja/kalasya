@@ -44,6 +44,23 @@ func (s *Service) GetBlogInfo(subdomain string) (*models.BlogView, error) {
 }
 
 func (s *Service) UpdateBlogPost(postID int, updates map[string]interface{}) error {
-  err := s.posts.UpdateSelective(postID, updates)
-  return err
+	err := s.posts.UpdateSelective(postID, updates)
+	return err
+}
+
+func (s *Service) CreatePost(post *models.Post) error {
+	err := s.posts.CreatePost(post)
+	return err
+}
+
+func (s *Service) UpdateBlogHome(subdomain string) error {
+	post, err := s.GetBlogHome(subdomain)
+	if err != nil {
+		return err
+	}
+  postID, err := s.posts.GetBlogHomeID(subdomain)
+  if err != nil {
+    return err
+  }
+  s.posts.UpdateSelective(postID, )
 }
